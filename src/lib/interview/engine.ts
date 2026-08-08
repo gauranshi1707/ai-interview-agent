@@ -4,6 +4,7 @@ import { evaluateAnswer } from './evaluator';
 import { generateNextQuestion } from './question-generator';
 import { callLLM } from './llm';
 import { generateFallbackFeedback } from './fallback';
+import { generateInterviewFeedback } from './feedback';
 
 // Minimum interview thresholds
 const MIN_QUESTIONS = 8;
@@ -158,53 +159,5 @@ export async function processAnswer(
 async function generateFinalFeedback(
   state: InterviewState
 ): Promise<InterviewFeedback> {
-  if (!process.env.OPENAI_API_KEY) {
-    return generateFallbackFeedback(state);
-  }
-
-  // Build competency summary for the LLM
-  const skillSummary = Object.entries(state.skillState)
-    .map(([topic, skill]) => `${topic}: score=${skill.score.toFixed(2)}, confidence=${skill.confidence}`)
-    .join('\n');
-
-  const systemPrompt = `You are a senior engineering manager providing final structured feedback for an AI Engineering candidate.
-Return ONLY a strict JSON object:
-{
-  "summary": "<2-3 sentence overall assessment>",
-  "strengths": ["<specific strength 1>", "<specific strength 2>", ...],
-  "gaps": ["<specific gap 1>", "<specific gap 2>", ...],
-  "next": ["<actionable next step 1>", "<actionable next step 2>", ...]
-}
-
-Rules:
-- Summary must be specific to this candidate's actual interview performance. Not generic.
-- Strengths should cite specific things the candidate demonstrated.
-- Gaps should cite specific areas where knowledge was shallow or absent.
-- Next steps should be practical and learning-focused.
-- Do NOT expose internal scores or chain-of-thought.`;
-
-  const userPrompt = `Candidate: ${state.candidate.name}, ${state.candidate.role}, ${state.candidate.yearsOfExperience} YOE
-Questions asked: ${state.questionCount}
-Curriculum days covered: ${state.curriculumDaysCovered.join(', ')}
-Competencies assessed: ${state.competenciesCovered.join(', ')}
-
-Skill state:
-${skillSummary}
-
-Observations from interview:
-${state.observations.join('\n')}
-
-Generate the final feedback JSON.`;
-
-  const raw = await callLLM(systemPrompt, userPrompt, 'json_object');
-
-  if (!raw) return generateFallbackFeedback(state);
-
-  try {
-    const parsed = JSON.parse(raw) as InterviewFeedback;
-    if (!parsed.summary || !Array.isArray(parsed.strengths)) throw new Error('bad schema');
-    return parsed;
-  } catch {
-    return generateFallbackFeedback(state);
-  }
+  return generateInterviewFeedback(state);
 }
