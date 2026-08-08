@@ -1,0 +1,55 @@
+[
+  {
+    "id": "cand-001",
+    "name": "Sarah",
+    "role": "Junior AI Engineer",
+    "yearsOfExperience": 1,
+    "education": "B.S. Computer Science",
+    "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "failedMissions": [10, 11, 15],
+    "skippedMissions": [12, 13, 14, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    "attempts": {
+      "10": 3,
+      "11": 2,
+      "15": 4
+    },
+    "commitDays": 14,
+    "missionsCompleted": 9,
+    "firstTryPerformance": 0.6
+  },
+  {
+    "id": "cand-002",
+    "name": "Marcus",
+    "role": "Software Engineer",
+    "yearsOfExperience": 5,
+    "education": "M.S. Software Engineering",
+    "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+    "failedMissions": [19, 20],
+    "skippedMissions": [25, 26, 27, 28, 29, 30, 31],
+    "attempts": {
+      "10": 2,
+      "14": 2,
+      "19": 3,
+      "20": 2
+    },
+    "commitDays": 21,
+    "missionsCompleted": 18,
+    "firstTryPerformance": 0.8
+  },
+  {
+    "id": "cand-003",
+    "name": "David",
+    "role": "Senior Data Engineer",
+    "yearsOfExperience": 10,
+    "education": "Ph.D. Computer Science",
+    "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31],
+    "failedMissions": [],
+    "skippedMissions": [],
+    "attempts": {
+      "25": 2
+    },
+    "commitDays": 31,
+    "missionsCompleted": 31,
+    "firstTryPerformance": 0.95
+  }
+]
