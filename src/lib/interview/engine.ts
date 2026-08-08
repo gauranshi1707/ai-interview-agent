@@ -1,4 +1,4 @@
-import { Candidate, InterviewState, InterviewFeedback } from './types';
+import { Candidate, InterviewState, InterviewFeedback, AnswerEvidence, CompetencyStatus } from './types';
 import { generateInterviewPlan } from './planner';
 import { evaluateAnswer } from './evaluator';
 import { generateNextQuestion } from './question-generator';
@@ -35,6 +35,7 @@ export async function initializeInterview(
     competenciesCovered: [],
     currentCompetency: null,
     skillState: {},
+    evidences: [],
     observations: [],
     difficulty: getDifficultyFromExperience(candidate.yearsOfExperience),
     consecutiveTopicCount: 0,
@@ -71,8 +72,21 @@ export async function processAnswer(
   // Evaluate the answer
   const evaluation = await evaluateAnswer(state, answer);
 
-  // Accumulate observations for final feedback
-  state.observations.push(...evaluation.observations);
+  // Record structured evidence
+  const currentDay = state.curriculumDaysCovered[state.curriculumDaysCovered.length - 1] ?? 1;
+  const evidence: AnswerEvidence = {
+    question: state.currentQuestion ?? '',
+    answer,
+    competency: state.currentCompetency ?? 'General',
+    day: currentDay,
+    evaluation,
+  };
+  state.evidences.push(evidence);
+
+  // Record observations
+  if (evaluation.observations.length > 0) {
+    state.observations.push(...evaluation.observations);
+  }
 
   // Update skill state for current competency
   if (state.currentCompetency) {
@@ -80,20 +94,32 @@ export async function processAnswer(
     const existing = state.skillState[topic] ?? {
       score: 0,
       confidence: 'low' as const,
+      status: 'not_assessed' as CompetencyStatus,
       evidence: [],
     };
-    const avgScore =
-      (evaluation.correctness + evaluation.depth + evaluation.practicality + evaluation.reasoning) / 4;
+
+    const avgScore = evaluation.isDontKnow
+      ? 0.0
+      : (evaluation.correctness + evaluation.depth + evaluation.practicality + evaluation.reasoning) / 4;
+
+    const newScore = existing.evidence.length === 0 ? avgScore : (existing.score + avgScore) / 2;
+
+    const status: CompetencyStatus =
+      evaluation.isDontKnow || newScore < 0.3
+        ? 'not_demonstrated'
+        : newScore < 0.7
+        ? 'developing'
+        : 'strong';
 
     state.skillState[topic] = {
-      score: (existing.score + avgScore) / 2,
-      confidence:
-        avgScore > 0.7 ? 'high' : avgScore > 0.4 ? 'medium' : 'low',
+      score: newScore,
+      confidence: avgScore > 0.7 ? 'high' : avgScore > 0.4 ? 'medium' : 'low',
+      status,
       evidence: [
         ...existing.evidence,
-        ...evaluation.strengths.slice(0, 1),
-        ...evaluation.weaknesses.slice(0, 1),
-      ].slice(0, 5),
+        ...evaluation.strengths,
+        ...evaluation.weaknesses,
+      ].filter(Boolean).slice(0, 5),
     };
   }
 
@@ -113,7 +139,7 @@ export async function processAnswer(
     if (idx > 0) state.difficulty = order[idx - 1];
   }
 
-  // Check if we've satisfied minimum thresholds to end interview
+  // Check if minimum interview thresholds are met
   if (
     state.questionCount >= MIN_QUESTIONS &&
     state.curriculumDaysCovered.length >= MIN_CURRICULUM_DAYS
@@ -123,7 +149,7 @@ export async function processAnswer(
     state.messages.push({
       role: 'interviewer',
       content:
-        "Thank you — that brings our interview to a close. I appreciate the depth of your answers. I'll now compile your assessment.",
+        "Thank you — that brings our interview to a close. I'll now compile your technical assessment based on the evidence demonstrated.",
     });
     return state;
   }

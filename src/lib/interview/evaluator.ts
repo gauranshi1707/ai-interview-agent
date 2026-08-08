@@ -1,6 +1,6 @@
 import { EvaluationResult, InterviewState } from './types';
 import { callLLM } from './llm';
-import { evaluateFallback } from './fallback';
+import { evaluateFallback, isDontKnow } from './fallback';
 
 export async function evaluateAnswer(
   state: InterviewState,
@@ -8,14 +8,19 @@ export async function evaluateAnswer(
 ): Promise<EvaluationResult> {
   const currentTopic = state.currentCompetency ?? 'AI Engineering';
 
+  // Fast path for explicit IDK / non-technical answers
+  if (isDontKnow(answer)) {
+    return evaluateFallback(answer, currentTopic);
+  }
+
   if (!process.env.OPENAI_API_KEY) {
     return evaluateFallback(answer, currentTopic);
   }
 
   const systemPrompt = `You are evaluating a technical interview answer for an AI Engineering candidate.
 The candidate was asked: "${state.currentQuestion}"
-Their experience level: ${state.candidate.yearsOfExperience} years.
-Current interview difficulty: ${state.difficulty}.
+Current topic: "${currentTopic}"
+Candidate experience level: ${state.candidate.yearsOfExperience} years.
 
 Evaluate the answer and return ONLY a strict JSON object:
 {
@@ -23,16 +28,18 @@ Evaluate the answer and return ONLY a strict JSON object:
   "depth": <0.0-1.0>,
   "practicality": <0.0-1.0>,
   "reasoning": <0.0-1.0>,
-  "observations": ["<brief factual observation, not rating language>"],
-  "strengths": ["<specific strength demonstrated>"],
-  "weaknesses": ["<specific gap identified>"],
+  "isDontKnow": false,
+  "observations": ["<factual technical observation>"],
+  "strengths": ["<specific technical strength demonstrated, if any>"],
+  "weaknesses": ["<specific technical gap identified, if any>"],
   "recommendedAction": "<probe_deeper|clarify|increase_difficulty|decrease_difficulty|test_application|test_debugging|test_tradeoffs|move_competency>"
 }
 
-Rules:
-- If the answer is "I don't know", "not sure", "idk", or very short (<15 words), set all scores to 0 and use "move_competency" or "decrease_difficulty".
-- Do not reveal evaluation scores to the candidate.
-- observations, strengths, weaknesses should be concise factual statements.`;
+CRITICAL RULES:
+1. NEVER treat response length or long explanations as evidence of competence if the technical content is missing or incorrect.
+2. Strengths MUST be empty array [] unless the candidate demonstrated genuine technical correctness/reasoning.
+3. NEVER add generic non-technical praise like "Completed the question" or "Engaged with the interviewer".
+4. If candidate said "idk", "I don't know", "not sure", or gave a non-answer, set all scores to 0.0, set isDontKnow: true, strengths: [], weaknesses: ["Could not demonstrate understanding of ${currentTopic}"], and recommendedAction: "move_competency".`;
 
   const result = await callLLM(systemPrompt, `Candidate answer: "${answer}"`, 'json_object');
 
@@ -40,11 +47,10 @@ Rules:
 
   try {
     const parsed = JSON.parse(result) as EvaluationResult;
-    // Validate structure
     if (typeof parsed.correctness !== 'number') throw new Error('Invalid schema');
     return parsed;
   } catch {
-    console.error('Failed to parse evaluation JSON, using fallback heuristics');
+    console.error('Failed to parse evaluation JSON, using fallback');
     return evaluateFallback(answer, currentTopic);
   }
 }

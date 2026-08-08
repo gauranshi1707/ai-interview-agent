@@ -1,6 +1,7 @@
 /**
  * Deterministic fallback interview engine.
  * Used when no OPENAI_API_KEY is set (demo mode).
+ * Strictly evidence-based answer evaluation and feedback generation.
  */
 
 import { InterviewState, InterviewFeedback, EvaluationResult, Candidate } from './types';
@@ -87,68 +88,96 @@ const QUESTION_BANK: FallbackQuestion[] = [
   },
 ];
 
-/** Signals indicating "I don't know" type responses */
+/** Signals indicating "I don't know" or non-technical responses */
 const IDK_PATTERNS = [
   "don't know", "not sure", "idk", "no idea", "i don't remember",
   "not familiar", "haven't learned", "skip", "pass", "nah", "dunno",
+  "no clue", "dont know", "n/a", "nothing",
+];
+
+const TECHNICAL_TERMS = [
+  'vector', 'embedding', 'retrieval', 'token', 'context', 'latency',
+  'tradeoff', 'index', 'score', 'chunk', 'pipeline', 'prompt', 'fine-tune',
+  'agent', 'tool', 'function', 'model', 'inference', 'hallucin', 'rerank',
+  'cosine', 'euclidean', 'distance', 'semantic', 'ragas', 'bleu', 'hyde',
+  'mcp', 'protocol', 'injection', 'guardrail', 'circuit breaker', 'backoff',
+  'rate limit', 'opentelemetry', 'tracing', 'logging', 'few-shot', 'zero-shot',
+  'chain-of-thought', 're-ranking', 'bm25', 'hybrid search', 'ann', 'hnsw',
 ];
 
 export function isDontKnow(answer: string): boolean {
   const lower = answer.toLowerCase().trim();
-  if (lower.length < 15) return true;
+  if (lower.length < 15 && !TECHNICAL_TERMS.some((t) => lower.includes(t))) {
+    return true;
+  }
   return IDK_PATTERNS.some((p) => lower.includes(p));
 }
 
 export function evaluateFallback(answer: string, questionTopic: string): EvaluationResult {
   if (isDontKnow(answer)) {
     return {
-      correctness: 0,
-      depth: 0,
-      practicality: 0,
-      reasoning: 0,
-      observations: [`Candidate did not demonstrate knowledge of ${questionTopic}.`],
+      correctness: 0.0,
+      depth: 0.0,
+      practicality: 0.0,
+      reasoning: 0.0,
+      isDontKnow: true,
+      observations: [`Candidate answered '${answer.substring(0, 30)}' showing no demonstrated knowledge of ${questionTopic}.`],
       strengths: [],
-      weaknesses: [`No knowledge demonstrated for ${questionTopic}.`],
+      weaknesses: [`Could not demonstrate understanding of ${questionTopic}.`],
       recommendedAction: 'move_competency',
     };
   }
 
-  const wordCount = answer.trim().split(/\s+/).length;
   const lower = answer.toLowerCase();
+  const matchedTerms = TECHNICAL_TERMS.filter((t) => lower.includes(t));
+  const wordCount = answer.trim().split(/\s+/).length;
 
-  const technicalTerms = [
-    'vector', 'embedding', 'retrieval', 'token', 'context', 'latency',
-    'tradeoff', 'index', 'score', 'chunk', 'pipeline', 'prompt', 'fine-tune',
-    'agent', 'tool', 'function', 'model', 'inference', 'hallucin', 'rerank',
-  ];
-  const technicalScore = technicalTerms.filter((t) => lower.includes(t)).length;
+  // If answer contains zero technical terms, length alone is NOT competence
+  if (matchedTerms.length === 0) {
+    return {
+      correctness: 0.1,
+      depth: 0.1,
+      practicality: 0.1,
+      reasoning: 0.1,
+      isDontKnow: false,
+      observations: [`Non-technical response provided for ${questionTopic}.`],
+      strengths: [],
+      weaknesses: [`Answer lacked technical concepts for ${questionTopic}.`],
+      recommendedAction: 'decrease_difficulty',
+    };
+  }
 
-  const correctness = Math.min(1, 0.4 + (wordCount > 50 ? 0.2 : 0) + technicalScore * 0.05);
-  const depth = Math.min(1, wordCount > 100 ? 0.8 : wordCount > 50 ? 0.6 : 0.4);
-  const reasoningKws = ['because', 'therefore', 'tradeoff', 'however', 'alternatively', 'compared'];
-  const reasoning = reasoningKws.some((k) => lower.includes(k)) ? 0.75 : 0.5;
-  const practicalKws = ['would', 'implement', 'production', 'deploy', 'use case'];
-  const practicality = practicalKws.some((k) => lower.includes(k)) ? 0.7 : 0.5;
+  const correctness = Math.min(1.0, 0.3 + matchedTerms.length * 0.15);
+  const depth = Math.min(1.0, wordCount > 60 ? 0.8 : 0.5);
+  const reasoningKws = ['because', 'therefore', 'tradeoff', 'however', 'alternatively', 'compared', 'leads to'];
+  const reasoning = reasoningKws.some((k) => lower.includes(k)) ? 0.8 : 0.5;
+  const practicalKws = ['would', 'implement', 'production', 'deploy', 'use case', 'metrics', 'monitor', 'test'];
+  const practicality = practicalKws.some((k) => lower.includes(k)) ? 0.8 : 0.5;
 
   const avgScore = (correctness + depth + practicality + reasoning) / 4;
+
   const action: EvaluationResult['recommendedAction'] =
-    avgScore > 0.75 ? 'increase_difficulty' :
-    avgScore > 0.55 ? 'move_competency' :
-    avgScore > 0.35 ? 'probe_deeper' :
+    avgScore >= 0.75 ? 'increase_difficulty' :
+    avgScore >= 0.55 ? 'move_competency' :
+    avgScore >= 0.35 ? 'probe_deeper' :
     'decrease_difficulty';
+
+  const strengths = avgScore >= 0.65 ? [`Demonstrated understanding of ${questionTopic}.`] : [];
+  const weaknesses = avgScore < 0.5 ? [`Limited technical depth on ${questionTopic}.`] : [];
 
   return {
     correctness,
     depth,
     practicality,
     reasoning,
+    isDontKnow: false,
     observations: [
-      wordCount > 80
-        ? `Demonstrated understanding of ${questionTopic} with a detailed response (${wordCount} words).`
-        : `Brief answer on ${questionTopic}.`,
+      avgScore >= 0.65
+        ? `Demonstrated technical understanding of ${questionTopic}.`
+        : `Answer on ${questionTopic} showed limited technical depth.`,
     ],
-    strengths: avgScore > 0.6 ? [`Demonstrated understanding of ${questionTopic}.`] : [],
-    weaknesses: avgScore < 0.5 ? [`Limited depth on ${questionTopic}.`] : [],
+    strengths,
+    weaknesses,
     recommendedAction: action,
   };
 }
@@ -202,32 +231,71 @@ export function generateFallbackPlan(candidate: Candidate): string {
 }
 
 export function generateFallbackFeedback(state: InterviewState): InterviewFeedback {
-  const strengthObs = state.observations.filter(
-    (o) => o.startsWith('Demonstrated')
-  ).slice(0, 3);
-  const gapObs = state.observations.filter(
-    (o) => o.includes('did not demonstrate') || o.includes('Limited depth')
-  ).slice(0, 3);
+  // Aggregate actual evidence from answered questions ONLY
+  const strongEvidences = state.evidences.filter((e) => {
+    if (e.evaluation.isDontKnow) return false;
+    const avg = (e.evaluation.correctness + e.evaluation.depth + e.evaluation.practicality + e.evaluation.reasoning) / 4;
+    return avg >= 0.65;
+  });
 
-  const coveredList = state.competenciesCovered.slice(0, 3).join(', ') || 'AI engineering topics';
+  const weakEvidences = state.evidences.filter((e) => {
+    if (e.evaluation.isDontKnow) return true;
+    const avg = (e.evaluation.correctness + e.evaluation.depth + e.evaluation.practicality + e.evaluation.reasoning) / 4;
+    return avg < 0.5;
+  });
+
+  // Strengths MUST come ONLY from strong answers
+  const strengths: string[] = [];
+  for (const ev of strongEvidences) {
+    const s = ev.evaluation.strengths.find(Boolean) || `Demonstrated understanding of ${ev.competency}.`;
+    if (!strengths.includes(s)) {
+      strengths.push(s);
+    }
+  }
+
+  // Gaps MUST come ONLY from tested topics where performance was weak/IDK
+  const gaps: string[] = [];
+  for (const ev of weakEvidences) {
+    const g = ev.evaluation.isDontKnow
+      ? `Could not demonstrate understanding of ${ev.competency}.`
+      : ev.evaluation.weaknesses.find(Boolean) || `Limited depth demonstrated on ${ev.competency}.`;
+    if (!gaps.includes(g)) {
+      gaps.push(g);
+    }
+  }
+
+  // Summary logic
+  let summary = '';
+  if (strengths.length === 0) {
+    summary = `Limited technical understanding was demonstrated during this interview session. The candidate could not demonstrate foundational knowledge across the assessed competencies.`;
+  } else if (gaps.length > 0) {
+    const strongTopics = strongEvidences.map((e) => e.competency).join(', ');
+    summary = `${state.candidate.name} demonstrated solid understanding in some areas (${strongTopics}), but showed gaps or could not demonstrate knowledge in other assessed topics.`;
+  } else {
+    summary = `${state.candidate.name} demonstrated strong technical capability across all assessed competencies during the interview.`;
+  }
+
+  // Recommendations based on actual gaps
+  const next: string[] = [];
+  if (gaps.some((g) => g.toLowerCase().includes('rag') || g.toLowerCase().includes('embedding'))) {
+    next.push('Review the fundamentals of embeddings and vector retrieval pipelines.');
+  }
+  if (gaps.some((g) => g.toLowerCase().includes('agent') || g.toLowerCase().includes('function'))) {
+    next.push('Practice building hands-on function calling and multi-agent workflows.');
+  }
+  if (gaps.some((g) => g.toLowerCase().includes('observability') || g.toLowerCase().includes('security') || g.toLowerCase().includes('readiness'))) {
+    next.push('Study production AI system design, observability, and prompt security.');
+  }
+
+  if (next.length === 0) {
+    next.push('Review advanced production architecture and failure mode mitigation.');
+    next.push('Practice complex system design scenarios for enterprise AI deployment.');
+  }
 
   return {
-    summary:
-      strengthObs.length >= gapObs.length
-        ? `${state.candidate.name} demonstrated solid technical foundations across ${coveredList}. Answers showed appropriate depth for their experience level.`
-        : `${state.candidate.name} showed foundational knowledge with room to deepen expertise in ${gapObs.length > 0 ? state.competenciesCovered.slice(-2).join(' and ') : 'advanced production topics'}.`,
-    strengths:
-      strengthObs.length > 0
-        ? strengthObs
-        : ['Completed the full technical interview session.', 'Engaged with all topic areas presented.'],
-    gaps:
-      gapObs.length > 0
-        ? gapObs
-        : ['Some answers could benefit from more depth on production-level considerations.'],
-    next: [
-      'Review RAG pipeline failure modes and practice diagnosis exercises.',
-      'Study production observability: logging, tracing, and LLM-specific monitoring.',
-      'Build a hands-on multi-agent or MCP integration project.',
-    ],
+    summary,
+    strengths, // Strictly empty [] if no technical strengths demonstrated!
+    gaps,
+    next,
   };
 }

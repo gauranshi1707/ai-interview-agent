@@ -330,16 +330,22 @@ function FeedbackScreen({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Strengths
+            Demonstrated Strengths
           </h2>
-          <ul className="space-y-2">
-            {feedback.strengths.map((s, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></span>
-                {s}
-              </li>
-            ))}
-          </ul>
+          {feedback.strengths.length > 0 ? (
+            <ul className="space-y-2">
+              {feedback.strengths.map((s, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400 italic">
+              No technical strengths demonstrated during this session.
+            </p>
+          )}
         </div>
 
         {/* Gaps */}
