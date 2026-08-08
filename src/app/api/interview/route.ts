@@ -32,7 +32,15 @@ export async function POST(req: Request) {
       saveSession(state);
 
       const reply = state.messages[state.messages.length - 1].content;
-      return NextResponse.json({ reply, done: false });
+      return NextResponse.json({
+        reply,
+        done: false,
+        meta: {
+          questionCount: state.questionCount,
+          curriculumDaysCovered: state.curriculumDaysCovered,
+          competenciesCovered: state.competenciesCovered,
+        },
+      });
     }
 
     // --- Already done ---
@@ -41,6 +49,11 @@ export async function POST(req: Request) {
         reply: 'This interview session has already been completed.',
         done: true,
         feedback: state.feedback,
+        meta: {
+          questionCount: state.questionCount,
+          curriculumDaysCovered: state.curriculumDaysCovered,
+          competenciesCovered: state.competenciesCovered,
+        },
       });
     }
 
@@ -60,11 +73,24 @@ export async function POST(req: Request) {
         reply: 'Interview completed.',
         done: true,
         feedback: state.feedback,
+        meta: {
+          questionCount: state.questionCount,
+          curriculumDaysCovered: state.curriculumDaysCovered,
+          competenciesCovered: state.competenciesCovered,
+        },
       });
     }
 
     const reply = state.messages[state.messages.length - 1].content;
-    return NextResponse.json({ reply, done: false });
+    return NextResponse.json({
+      reply,
+      done: false,
+      meta: {
+        questionCount: state.questionCount,
+        curriculumDaysCovered: state.curriculumDaysCovered,
+        competenciesCovered: state.competenciesCovered,
+      },
+    });
   } catch (err) {
     console.error('Interview API error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
