@@ -1,36 +1,165 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Interview Agent — "Build the interviewer, not the interview."
 
-## Getting Started
+An adaptive AI Interview Agent built for the ABTalks 31-Day Enterprise AI Engineering Cohort.
 
-First, run the development server:
+Rather than running a static script of fixed questions, this agent uses a **state-driven adaptive interview engine** that combines candidate background, curriculum targets, and live interview responses to generate personalized, context-aware follow-up questions.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🌟 Key Features
+
+1. **Candidate Personalisation**: Uses cohort history (completed, skipped, and failed missions, attempt counts, and experience level) to form a tailored strategy.
+2. **State-Driven Adaptive Engine**: Tracks 3 layers of context (Candidate History, Curriculum Grounding, Live Evidence) to adjust difficulty and select competencies dynamically.
+3. **Graceful Handling of Weak & "I don't know" Answers**: Detects lack of demonstrated knowledge and pivots gracefully to another angle or competency without looping.
+4. **Duplicate Question & Loop Prevention**: Employs semantic overlap checks (Jaccard similarity + exact match filters) and consecutive topic limits.
+5. **Robust Demo Fallback Mode**: Functions deterministically without an LLM API key, satisfying all state tracking, multi-turn, and feedback requirements.
+6. **Strict API Contract**: Fulfills `POST /api/interview` exactly as defined in `technical-spec.md`.
+
+---
+
+## 🏗️ Application Architecture
+
+```
+Candidate Profile + Cohort Data
+              │
+              ▼
+   [ Interview Planner ]
+              │
+              ▼
+    [ Question Generator ]
+              │
+              ▼
+       Candidate Answer
+              │
+              ▼
+    [ Answer Evaluator ] ──► Updates Candidate Skill State
+              │
+              ▼
+ [ Adaptive Decision Engine ]
+ (Difficulty / Competency / Topic Limit check)
+              │
+              ▼
+     [ Final Feedback ]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Quick Start & Local Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
 
-## Learn More
+- Node.js 18+
+- npm
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Clone the repository
+git clone https://github.com/gauranshisrivastava1/ai-interview-agent.git
+cd ai-interview-agent
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Install dependencies
+npm install
 
-## Deploy on Vercel
+# (Optional) Set up OpenAI API Key for real LLM mode
+cp .env.example .env.local
+# Add your OPENAI_API_KEY to .env.local
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Run the development server
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## ⚙️ Environment Variables
+
+Copy `.env.example` to `.env.local`:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+If `OPENAI_API_KEY` is omitted, the application automatically operates in **Demo Fallback Mode**.
+
+---
+
+## 🔌 API Contract
+
+### `POST /api/interview`
+
+#### 1. Initial Request (Start Interview)
+```json
+{
+  "sessionId": "session-cand-001-abc",
+  "candidate": {
+    "id": "cand-001",
+    "name": "Sarah",
+    "role": "Junior AI Engineer",
+    "yearsOfExperience": 1,
+    "education": "B.S. Computer Science",
+    "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "failedMissions": [10, 11, 15],
+    "skippedMissions": [12, 13, 14],
+    "attempts": { "10": 3 },
+    "commitDays": 14,
+    "missionsCompleted": 9,
+    "firstTryPerformance": 0.6
+  }
+}
+```
+
+Response:
+```json
+{
+  "reply": "Welcome. Let's begin your interview.",
+  "done": false
+}
+```
+
+#### 2. Subsequent Turn (Candidate Answer)
+```json
+{
+  "sessionId": "session-cand-001-abc",
+  "message": "Embeddings convert text into high-dimensional vector representations that capture semantic meaning."
+}
+```
+
+Response:
+```json
+{
+  "reply": "Your embeddings look good, but retrieval precision is poor. How would you diagnose the problem?",
+  "done": false
+}
+```
+
+#### 3. Completion Response
+```json
+{
+  "reply": "Interview completed.",
+  "done": true,
+  "feedback": {
+    "summary": "Demonstrated strong foundational knowledge across retrieval and RAG...",
+    "strengths": ["Clear explanation of vector embeddings", "Understood RAG grounding"],
+    "gaps": ["Shallow explanation of production observability"],
+    "next": ["Practice retrieval evaluation", "Study LLM monitoring frameworks"]
+  }
+}
+```
+
+---
+
+## 🧪 Testing & Verification
+
+```bash
+# Type check
+npx tsc --noEmit
+
+# Linting
+npm run lint
+
+# Production build
+npm run build
+```
