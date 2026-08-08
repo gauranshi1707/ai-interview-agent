@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-
 import { useState, useEffect, useRef, useCallback, MutableRefObject } from 'react';
 import type { Candidate, InterviewFeedback } from '@/lib/interview/types';
 
@@ -24,11 +23,12 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
   const [questionCount, setQuestionCount] = useState(0);
   const [curriculumDays, setCurriculumDays] = useState<number[]>([]);
   const [competencies, setCompetencies] = useState<string[]>([]);
+  const [currentCompetency, setCurrentCompetency] = useState<string | null>(null);
+  const [difficulty, setDifficulty] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  // Use a ref-based mount guard to avoid calling setState synchronously in effect
   const hasStarted: MutableRefObject<boolean> = useRef(false);
 
   const scrollToBottom = useCallback(() => {
@@ -39,7 +39,7 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
     scrollToBottom();
   }, [messages, loading, scrollToBottom]);
 
-  // Auto-start the interview (ref guard avoids setState-in-effect lint error)
+  // Auto-start the interview
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
@@ -56,6 +56,12 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
         if (data.reply) {
           setMessages([{ role: 'interviewer', content: data.reply }]);
           setQuestionCount(1);
+        }
+        if (data.meta) {
+          setCurriculumDays(data.meta.curriculumDaysCovered ?? []);
+          setCompetencies(data.meta.competenciesCovered ?? []);
+          if (data.meta.currentCompetency) setCurrentCompetency(data.meta.currentCompetency);
+          if (data.meta.difficulty) setDifficulty(data.meta.difficulty);
         }
         if (data.done) {
           setDone(true);
@@ -96,6 +102,13 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
         return;
       }
 
+      if (data.meta) {
+        setCurriculumDays(data.meta.curriculumDaysCovered ?? []);
+        setCompetencies(data.meta.competenciesCovered ?? []);
+        if (data.meta.currentCompetency) setCurrentCompetency(data.meta.currentCompetency);
+        if (data.meta.difficulty) setDifficulty(data.meta.difficulty);
+      }
+
       if (data.done) {
         setDone(true);
         setFeedback(data.feedback);
@@ -111,12 +124,6 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
           { role: 'interviewer', content: data.reply },
         ]);
         setQuestionCount((n) => n + 1);
-      }
-
-      // Update progress from response headers or embedded data
-      if (data.meta) {
-        setCurriculumDays(data.meta.curriculumDaysCovered ?? []);
-        setCompetencies(data.meta.competenciesCovered ?? []);
       }
     } catch {
       setError('Network error. Your message may not have been received.');
@@ -140,6 +147,8 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
       ? 'Mid Track'
       : 'Junior Track';
 
+  const activeAssessingTopic = currentCompetency || (competencies.length > 0 ? competencies[competencies.length - 1] : 'AI Engineering');
+
   if (done && feedback) {
     return <FeedbackScreen candidate={candidate} feedback={feedback} questionCount={questionCount} competencies={competencies} />;
   }
@@ -147,7 +156,7 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
   return (
     <div className="min-h-screen bg-[#020817] flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
@@ -163,39 +172,46 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
                 <span className="text-slate-500 text-sm">·</span>
                 <span className="text-slate-400 text-sm">{candidate.yearsOfExperience} YOE</span>
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className="inline-flex items-center gap-1 text-xs text-blue-400 bg-blue-950/50 border border-blue-800/40 rounded-full px-2 py-0.5">
                   <span className="w-1 h-1 rounded-full bg-blue-400 inline-block"></span>
                   Tailored to Cohort Journey
                 </span>
                 <span className="text-xs text-slate-500">{track}</span>
+                {difficulty && (
+                  <span className="text-xs text-slate-400 capitalize bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700/50">
+                    Difficulty: {difficulty}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
           {/* Progress */}
           <div className="flex-shrink-0 text-right">
-            <div className="text-white font-semibold text-sm">Q{questionCount}</div>
+            <div className="text-white font-semibold text-sm">Question {questionCount}</div>
             <div className="text-xs text-slate-500">
-              {curriculumDays.length} topic{curriculumDays.length !== 1 ? 's' : ''} covered
+              {curriculumDays.length} curriculum day{curriculumDays.length !== 1 ? 's' : ''} covered
             </div>
           </div>
         </div>
 
-        {/* Cohort stats bar */}
-        <div className="max-w-4xl mx-auto px-4 pb-2">
-          <div className="flex items-center gap-3 text-xs text-slate-500">
-            <span className="text-emerald-400">{candidate.completedMissions.length} completed</span>
-            <span>·</span>
-            <span className="text-amber-400">{candidate.skippedMissions.length} skipped</span>
-            <span>·</span>
-            <span className="text-rose-400">{candidate.failedMissions.length} failed</span>
-            {competencies.length > 0 && (
-              <>
-                <span>·</span>
-                <span className="text-slate-400">Assessing: {competencies.slice(-2).join(', ')}</span>
-              </>
-            )}
+        {/* Dynamic Assessing Header */}
+        <div className="max-w-4xl mx-auto px-4 pb-2.5">
+          <div className="flex items-center justify-between text-xs gap-2 flex-wrap">
+            <div className="flex items-center gap-2 text-slate-400">
+              <span className="text-blue-400 font-semibold uppercase tracking-wider text-[11px]">Assessing:</span>
+              <span className="text-white font-medium bg-blue-950/60 border border-blue-800/50 px-2.5 py-0.5 rounded-md">
+                {activeAssessingTopic}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-slate-500 text-xs">
+              <span className="text-emerald-400">{candidate.completedMissions.length} completed</span>
+              <span>·</span>
+              <span className="text-amber-400">{candidate.skippedMissions.length} skipped</span>
+              <span>·</span>
+              <span className="text-rose-400">{candidate.failedMissions.length} failed</span>
+            </div>
           </div>
         </div>
       </header>
@@ -216,12 +232,17 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
 
               {/* Bubble */}
               <div className={`max-w-[80%] sm:max-w-[72%] ${msg.role === 'candidate' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 flex items-center gap-2">
                   {msg.role === 'interviewer' ? 'Interviewer' : candidate.name}
+                  {msg.role === 'interviewer' && i === messages.length - 1 && activeAssessingTopic && (
+                    <span className="text-[10px] text-blue-400 bg-blue-950/40 px-1.5 py-0.2 rounded border border-blue-900/40">
+                      {activeAssessingTopic}
+                    </span>
+                  )}
                 </span>
                 <div className={`rounded-2xl px-4 py-3 leading-relaxed text-sm
                   ${msg.role === 'interviewer'
-                    ? 'bg-slate-800 text-slate-200 rounded-tl-sm'
+                    ? 'bg-slate-800 text-slate-200 rounded-tl-sm border border-slate-700/50'
                     : 'bg-blue-600 text-white rounded-tr-sm'
                   }`}>
                   {msg.content}
@@ -236,7 +257,7 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">AI</div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs text-slate-500">Interviewer</span>
-                <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
+                <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 border border-slate-700/50">
                   <div className="typing-dot"></div>
                   <div className="typing-dot"></div>
                   <div className="typing-dot"></div>
@@ -307,12 +328,12 @@ function FeedbackScreen({
       <div className="max-w-3xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 mb-5">
-            <svg className="w-8 h-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/30 mb-5">
+            <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Interview Complete</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Technical Interview Complete</h1>
           <p className="text-slate-400">
             {candidate.name} · {candidate.role} · {questionCount} questions · {competencies.length || 4} competencies assessed
           </p>
@@ -320,7 +341,7 @@ function FeedbackScreen({
 
         {/* Summary Card */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Overall Assessment</h2>
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Overall Technical Assessment</h2>
           <p className="text-slate-200 leading-relaxed">{feedback.summary}</p>
         </div>
 
@@ -330,7 +351,7 @@ function FeedbackScreen({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Demonstrated Strengths
+            Demonstrated Technical Strengths
           </h2>
           {feedback.strengths.length > 0 ? (
             <ul className="space-y-2">
@@ -354,16 +375,22 @@ function FeedbackScreen({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            Gaps
+            Un-Demonstrated / Weak Competencies
           </h2>
-          <ul className="space-y-2">
-            {feedback.gaps.map((g, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-amber-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
-                {g}
-              </li>
-            ))}
-          </ul>
+          {feedback.gaps.length > 0 ? (
+            <ul className="space-y-2">
+              {feedback.gaps.map((g, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-amber-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
+                  {g}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400 italic">
+              No technical gaps identified.
+            </p>
+          )}
         </div>
 
         {/* Next Steps */}
@@ -372,7 +399,7 @@ function FeedbackScreen({
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-            Recommended Next Steps
+            Recommended Learning Path
           </h2>
           <ul className="space-y-2">
             {feedback.next.map((n, i) => (

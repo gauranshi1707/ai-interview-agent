@@ -257,7 +257,7 @@ export function generateFallbackFeedback(state: InterviewState): InterviewFeedba
   const gaps: string[] = [];
   for (const ev of weakEvidences) {
     const g = ev.evaluation.isDontKnow
-      ? `Could not demonstrate understanding of ${ev.competency}.`
+      ? `Did not demonstrate understanding of ${ev.competency} during this interview.`
       : ev.evaluation.weaknesses.find(Boolean) || `Limited depth demonstrated on ${ev.competency}.`;
     if (!gaps.includes(g)) {
       gaps.push(g);
@@ -267,10 +267,10 @@ export function generateFallbackFeedback(state: InterviewState): InterviewFeedba
   // Summary logic
   let summary = '';
   if (strengths.length === 0) {
-    summary = `Limited technical understanding was demonstrated during this interview session. The candidate could not demonstrate foundational knowledge across the assessed competencies.`;
+    summary = `The candidate did not demonstrate technical knowledge across the assessed competencies during this interview.`;
   } else if (gaps.length > 0) {
     const strongTopics = strongEvidences.map((e) => e.competency).join(', ');
-    summary = `${state.candidate.name} demonstrated solid understanding in some areas (${strongTopics}), but showed gaps or could not demonstrate knowledge in other assessed topics.`;
+    summary = `${state.candidate.name} demonstrated solid understanding in some areas (${strongTopics}), but did not demonstrate knowledge in other assessed topics during this interview.`;
   } else {
     summary = `${state.candidate.name} demonstrated strong technical capability across all assessed competencies during the interview.`;
   }

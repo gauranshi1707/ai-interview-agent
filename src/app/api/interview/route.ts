@@ -39,6 +39,8 @@ export async function POST(req: Request) {
           questionCount: state.questionCount,
           curriculumDaysCovered: state.curriculumDaysCovered,
           competenciesCovered: state.competenciesCovered,
+          currentCompetency: state.currentCompetency,
+          difficulty: state.difficulty,
         },
       });
     }
@@ -53,6 +55,8 @@ export async function POST(req: Request) {
           questionCount: state.questionCount,
           curriculumDaysCovered: state.curriculumDaysCovered,
           competenciesCovered: state.competenciesCovered,
+          currentCompetency: state.currentCompetency,
+          difficulty: state.difficulty,
         },
       });
     }
@@ -77,6 +81,8 @@ export async function POST(req: Request) {
           questionCount: state.questionCount,
           curriculumDaysCovered: state.curriculumDaysCovered,
           competenciesCovered: state.competenciesCovered,
+          currentCompetency: state.currentCompetency,
+          difficulty: state.difficulty,
         },
       });
     }
@@ -89,6 +95,8 @@ export async function POST(req: Request) {
         questionCount: state.questionCount,
         curriculumDaysCovered: state.curriculumDaysCovered,
         competenciesCovered: state.competenciesCovered,
+        currentCompetency: state.currentCompetency,
+        difficulty: state.difficulty,
       },
     });
   } catch (err) {

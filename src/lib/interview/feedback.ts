@@ -69,8 +69,8 @@ Generate evidence-based feedback.`;
     );
     if (allDontKnowOrZero) {
       parsed.strengths = [];
-      if (!parsed.summary.toLowerCase().includes('limited') && !parsed.summary.toLowerCase().includes('no technical')) {
-        parsed.summary = 'Limited technical understanding was demonstrated during this interview session across the assessed competencies.';
+      if (!parsed.summary.toLowerCase().includes('did not demonstrate') && !parsed.summary.toLowerCase().includes('no technical')) {
+        parsed.summary = 'The candidate did not demonstrate technical knowledge across the assessed competencies during this interview.';
       }
     }
 
