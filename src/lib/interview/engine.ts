@@ -2,8 +2,6 @@ import { Candidate, InterviewState, InterviewFeedback } from './types';
 import { generateInterviewPlan } from './planner';
 import { evaluateAnswer } from './evaluator';
 import { generateNextQuestion } from './question-generator';
-import { callLLM } from './llm';
-import { generateFallbackFeedback } from './fallback';
 import { generateInterviewFeedback } from './feedback';
 
 // Minimum interview thresholds
