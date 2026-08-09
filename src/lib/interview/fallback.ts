@@ -96,13 +96,14 @@ const IDK_PATTERNS = [
 ];
 
 const TECHNICAL_TERMS = [
-  'vector', 'embedding', 'retrieval', 'token', 'context', 'latency',
-  'tradeoff', 'index', 'score', 'chunk', 'pipeline', 'prompt', 'fine-tune',
+  'vector', 'embedding', 'retrieval', 'retrieve', 'token', 'context', 'latency',
+  'tradeoff', 'index', 'score', 'chunk', 'chunking', 'pipeline', 'prompt', 'fine-tune',
   'agent', 'tool', 'function', 'model', 'inference', 'hallucin', 'rerank',
   'cosine', 'euclidean', 'distance', 'semantic', 'ragas', 'bleu', 'hyde',
   'mcp', 'protocol', 'injection', 'guardrail', 'circuit breaker', 'backoff',
   'rate limit', 'opentelemetry', 'tracing', 'logging', 'few-shot', 'zero-shot',
   'chain-of-thought', 're-ranking', 'bm25', 'hybrid search', 'ann', 'hnsw',
+  'chroma', 'cohere', 'dataset', 'database',
 ];
 
 export function isDontKnow(answer: string): boolean {
@@ -148,10 +149,10 @@ export function evaluateFallback(answer: string, questionTopic: string): Evaluat
   }
 
   const correctness = Math.min(1.0, 0.3 + matchedTerms.length * 0.15);
-  const depth = Math.min(1.0, wordCount > 60 ? 0.8 : 0.5);
-  const reasoningKws = ['because', 'therefore', 'tradeoff', 'however', 'alternatively', 'compared', 'leads to'];
+  const depth = Math.min(1.0, wordCount > 60 ? 0.8 : wordCount > 15 ? 0.6 : 0.4);
+  const reasoningKws = ['because', 'therefore', 'tradeoff', 'however', 'alternatively', 'compared', 'leads to', 'since', 'so that'];
   const reasoning = reasoningKws.some((k) => lower.includes(k)) ? 0.8 : 0.5;
-  const practicalKws = ['would', 'implement', 'production', 'deploy', 'use case', 'metrics', 'monitor', 'test'];
+  const practicalKws = ['would', 'implement', 'production', 'deploy', 'use case', 'metrics', 'monitor', 'test', 'chunk', 'index', 'query', 'serve'];
   const practicality = practicalKws.some((k) => lower.includes(k)) ? 0.8 : 0.5;
 
   const avgScore = (correctness + depth + practicality + reasoning) / 4;
@@ -162,8 +163,11 @@ export function evaluateFallback(answer: string, questionTopic: string): Evaluat
     avgScore >= 0.35 ? 'probe_deeper' :
     'decrease_difficulty';
 
-  const strengths = avgScore >= 0.65 ? [`Demonstrated understanding of ${questionTopic}.`] : [];
-  const weaknesses = avgScore < 0.5 ? [`Limited technical depth on ${questionTopic}.`] : [];
+  const isTechnicallyStrong = correctness >= 0.7 || avgScore >= 0.65 || (correctness >= 0.6 && matchedTerms.length >= 2);
+  const isWeak = correctness < 0.35 || (avgScore < 0.45 && matchedTerms.length < 2);
+
+  const strengths = isTechnicallyStrong ? [`Demonstrated understanding of ${questionTopic}.`] : [];
+  const weaknesses = isWeak ? [`Limited technical depth on ${questionTopic}.`] : [];
 
   return {
     correctness,
@@ -172,7 +176,7 @@ export function evaluateFallback(answer: string, questionTopic: string): Evaluat
     reasoning,
     isDontKnow: false,
     observations: [
-      avgScore >= 0.65
+      isTechnicallyStrong
         ? `Demonstrated technical understanding of ${questionTopic}.`
         : `Answer on ${questionTopic} showed limited technical depth.`,
     ],
@@ -235,16 +239,15 @@ export function generateFallbackFeedback(state: InterviewState): InterviewFeedba
   const strongEvidences = state.evidences.filter((e) => {
     if (e.evaluation.isDontKnow) return false;
     const avg = (e.evaluation.correctness + e.evaluation.depth + e.evaluation.practicality + e.evaluation.reasoning) / 4;
-    return avg >= 0.65;
+    return e.evaluation.correctness >= 0.6 || avg >= 0.55 || e.evaluation.strengths.length > 0;
   });
 
   const weakEvidences = state.evidences.filter((e) => {
     if (e.evaluation.isDontKnow) return true;
-    const avg = (e.evaluation.correctness + e.evaluation.depth + e.evaluation.practicality + e.evaluation.reasoning) / 4;
-    return avg < 0.5;
+    return e.evaluation.correctness < 0.35 || e.evaluation.weaknesses.length > 0;
   });
 
-  // Strengths MUST come ONLY from strong answers
+  // Strengths MUST come ONLY from demonstrated technical answers
   const strengths: string[] = [];
   for (const ev of strongEvidences) {
     const s = ev.evaluation.strengths.find(Boolean) || `Demonstrated understanding of ${ev.competency}.`;
@@ -266,13 +269,22 @@ export function generateFallbackFeedback(state: InterviewState): InterviewFeedba
 
   // Summary logic
   let summary = '';
-  if (strengths.length === 0) {
+  const totalTurns = state.evidences.length;
+  const allIDKOrZero = totalTurns > 0 && state.evidences.every(
+    (e) => e.evaluation.isDontKnow || (e.evaluation.correctness < 0.3 && e.evaluation.depth < 0.3)
+  );
+
+  if (allIDKOrZero) {
     summary = `The candidate did not demonstrate technical knowledge across the assessed competencies during this interview.`;
-  } else if (gaps.length > 0) {
-    const strongTopics = strongEvidences.map((e) => e.competency).join(', ');
+  } else if (strengths.length > 0 && gaps.length > 0) {
+    const strongTopics = strongEvidences.map((e) => e.competency).filter((v, i, a) => a.indexOf(v) === i).join(', ');
     summary = `${state.candidate.name} demonstrated solid understanding in some areas (${strongTopics}), but did not demonstrate knowledge in other assessed topics during this interview.`;
-  } else {
+  } else if (strengths.length > 0) {
     summary = `${state.candidate.name} demonstrated strong technical capability across all assessed competencies during the interview.`;
+  } else if (gaps.length > 0) {
+    summary = `${state.candidate.name} showed limited technical depth across the assessed topics during this interview.`;
+  } else {
+    summary = `${state.candidate.name} completed the assessment displaying foundational familiarity with the core technical topics.`;
   }
 
   // Recommendations based on actual gaps
@@ -294,7 +306,7 @@ export function generateFallbackFeedback(state: InterviewState): InterviewFeedba
 
   return {
     summary,
-    strengths, // Strictly empty [] if no technical strengths demonstrated!
+    strengths,
     gaps,
     next,
   };
