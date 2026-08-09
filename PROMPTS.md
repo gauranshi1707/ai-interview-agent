@@ -1,30 +1,160 @@
 # AI Usage Log & Development History
 
-This log documents the authentic AI-assisted development workflow used during the ABTalks Vibe Code Hackathon rebuild for Problem Statement 2 (The AI Interview Agent).
+This log documents the AI-assisted development workflow used during the ABTalks Vibe Code Hackathon rebuild for Problem Statement 2 (The AI Interview Agent).
+
+The project was developed iteratively using AI-assisted planning, implementation, debugging, evaluation, and visual refinement. AI was used as a development assistant; project requirements, design decisions, testing, and final integration were reviewed throughout the process.
 
 ---
 
 ## 🛠️ AI Tools Used
 
-- **Claude 3.7 Sonnet / Gemini 3.6 Flash / Antigravity AI Assistant**: Core architecture design, code generation, refactoring, type checking, and bug fixes.
-- **Git CLI & Next.js Tools**: Repository initialization and build verification.
+- **Claude 3.7 Sonnet / Gemini 3.6 Flash / Antigravity AI Assistant**: Architecture design, code generation, refactoring, debugging, type checking, UI implementation, and visual refinement.
+- **Git CLI**: Version control, commit management, branch management, and repository verification.
+- **Next.js tooling**: Development server, linting, production builds, and route validation.
 
 ---
 
 ## 📝 Major Development Prompts & Evolution
 
 ### Phase 1: Architecture Planning & Spec Alignment
+
 - **Prompt:** *"Analyze technical-spec.md, curriculum.json, and candidates.json. Outline a clean server-side session state and an adaptive 3-layer context model (Candidate History + Curriculum Grounding + Live Evidence)."*
-- **Outcome:** Formulated state interface containing `skillState`, `observations`, `askedQuestions`, `curriculumDaysCovered`, and `consecutiveTopicCount`.
+
+- **Outcome:** Formulated the core interview state around:
+  - `skillState`
+  - `observations`
+  - `askedQuestions`
+  - `curriculumDaysCovered`
+  - `consecutiveTopicCount`
+
+This established the foundation for a state-driven adaptive interview rather than a static question-and-answer flow.
+
+---
 
 ### Phase 2: Engine & Fallback Implementation
+
 - **Prompt:** *"Build a deterministic fallback engine that runs without an LLM API key. It must handle 'I don't know' responses, prevent duplicate questions via normalization and similarity scoring, track 8+ questions across 4+ curriculum days, and generate structured feedback."*
-- **Outcome:** Implemented `fallback.ts` with a 12-question bank, Jaccard overlap similarity check, IDK pattern matching, and heuristic evaluations.
+
+- **Outcome:** Implemented the deterministic fallback engine in `fallback.ts`, including:
+  - A 12-question fallback bank
+  - Question normalization
+  - Jaccard overlap similarity checking
+  - Explicit "I don't know" pattern detection
+  - Heuristic answer evaluation
+  - Question progression and topic coverage tracking
+  - Structured fallback feedback
+
+This ensured that the interview remained functional even when an LLM provider was unavailable.
+
+---
 
 ### Phase 3: AI Reasoning Integration
+
 - **Prompt:** *"Create LLM modules for planner, evaluator, and question-generator using structured JSON output. Ensure API keys remain strictly server-side and fall back gracefully on API errors."*
-- **Outcome:** Created `planner.ts`, `evaluator.ts`, `question-generator.ts`, `feedback.ts`, and `llm.ts`.
+
+- **Outcome:** Created the LLM reasoning modules:
+  - `planner.ts`
+  - `evaluator.ts`
+  - `question-generator.ts`
+  - `feedback.ts`
+  - `llm.ts`
+
+The LLM layer was separated from the deterministic interview engine so that planning, evaluation, question generation, and feedback could be handled independently while preserving the fallback path.
+
+---
 
 ### Phase 4: Technical Console UI & Lint Hardening
+
 - **Prompt:** *"Rebuild the frontend into a technical interview console with candidate header, progress indicators, responsive chat layout, and structured final feedback panel. Fix React hook purity and async route params for Next.js App Router."*
-- **Outcome:** Built `src/components/InterviewConsole.tsx`, `src/app/page.tsx`, and `src/app/interview/[sessionId]/page.tsx` adhering to Next.js App Router conventions.
+
+- **Outcome:** Built and refined:
+  - `src/components/InterviewConsole.tsx`
+  - `src/app/page.tsx`
+  - `src/app/interview/[sessionId]/page.tsx`
+
+The interface was structured around:
+- Candidate context
+- Interview progress
+- Current competency/topic
+- Interviewer questions
+- Candidate responses
+- Final evidence-based assessment
+
+Next.js App Router conventions, React hook rules, and route parameter handling were also hardened during this phase.
+
+---
+
+### Phase 5: Visual Design Refinement
+
+- **Prompt:** *"Keep the existing interview platform structure and functionality, but refine the visual language so it feels like a deliberate technical interview product rather than a generic AI-generated dashboard. Use a restrained editorial visual system with a warm off-white background, deep forest green, muted brass/gold accents, thin borders, minimal shadows, and clear typography. Do not change the application logic or interaction flow."*
+
+- **Outcome:** Refined the visual system across the candidate-selection page, interview console, and assessment report.
+
+Key design decisions included:
+- Warm off-white primary background
+- Deep forest green as the primary action/accent color
+- Muted brass/gold for secondary emphasis
+- Dark neutral text instead of excessive white-on-black contrast
+- Thin borders instead of heavy card shadows
+- Minimal decorative geometric elements
+- More restrained use of semantic colors
+- Consistent card proportions and spacing
+- Editorial-style typography while preserving readability
+
+The goal was to make the interface feel like a purpose-built assessment platform rather than a generic AI product template.
+
+---
+
+### Phase 6: Interview Console & Assessment Visual Consistency
+
+- **Prompt:** *"Apply the same visual language to the live interview and final assessment screens. Preserve all existing interview logic, question progression, answer handling, evaluation, and routing. Only change presentation: colors, surfaces, borders, spacing, typography hierarchy, and component styling."*
+
+- **Outcome:** Applied the visual system consistently to:
+  - Live interview header
+  - Interviewer question blocks
+  - Candidate response blocks
+  - Response input area
+  - Overall assessment
+  - Demonstrated strengths
+  - Gaps
+  - Recommended next steps
+
+Semantic information remained intact while avoiding overly saturated red/green status cards and excessive colored surfaces.
+
+---
+
+### Phase 7: Theme Toggle & Hero Refinement
+
+- **Prompt:** *"Add a lightweight theme toggle while preserving the existing visual design. Refine the hero heading hierarchy so 'Technical Interview' and 'Console' have stronger visual presence without changing the page structure or application logic. Keep the existing editorial design language and make the theme transition consistent across the application."*
+
+- **Outcome:** Added:
+  - `src/components/ThemeToggle.tsx`
+  - Theme-aware styling
+  - Updated layout handling in `src/app/layout.tsx`
+  - Refined hero typography and spacing
+  - Consistent theme behavior across the application
+
+The theme toggle was implemented as a UI enhancement without changing interview state, routing, evaluation, or backend behavior.
+
+---
+
+## 🧪 Validation & Version Control
+
+After the major implementation and visual refinement stages, the project was repeatedly validated using:
+
+- ESLint
+- TypeScript compilation
+- Next.js production builds
+- Route generation checks
+- Git working-tree verification
+
+The visual redesign was committed separately from the underlying interview-engine fixes to preserve clear rollback points during development.
+
+### Key commits
+
+- `80078e4` — Fix assessment engine: evidence-based evaluation, zero false strengths for IDK, track per-turn `AnswerEvidence`
+- `9bffd1f` — Fix live header dynamic `currentCompetency` label and update assessment summary wording
+- `59cae0e` — Refine interview platform visual design
+- `0ca6349` — Add theme toggle and refine hero layout
+
+The final validated branch was pushed to GitHub after confirming a clean working tree and successful production build/lint checks.
