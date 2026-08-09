@@ -22,57 +22,78 @@
   --red-s:     #F5EDEB;
 }
 
+html.dark {
+  --canvas:    #121413;
+  --surface:   #1A1D1B;
+  --surface-2: #222624;
+  --border:    #2E3330;
+  --border-2:  #3A403C;
+  --text-1:    #F5F2EA;
+  --text-2:    #A39E95;
+  --text-3:    #827E76;
+  --green:     #3D8A6A;
+  --green-h:   #4FA680;
+  --green-s:   #16241D;
+  --green-b:   #233B2F;
+  --gold:      #C6994D;
+  --gold-s:    #241F16;
+  --gold-b:    #3A301D;
+  --red-m:     #B85C5C;
+  --red-s:     #261917;
+}
+
 @theme {
   --color-background: var(--canvas);
   --color-foreground: var(--text-1);
 
-  /* Remap Tailwind slate tokens → warm neutrals */
-  --color-slate-50:  #F7F4EC;
-  --color-slate-100: #F0EDE4;
-  --color-slate-200: #EAE6DC;
-  --color-slate-300: #DED8CB;
-  --color-slate-400: #9A9590;
-  --color-slate-500: #6E6A61;
-  --color-slate-600: #4A4740;
-  --color-slate-700: #393630;
-  --color-slate-800: #2A2820;
-  --color-slate-900: #1D1B14;
-  --color-slate-950: #171A18;
+  /* Remap Tailwind slate tokens → warm/cool neutrals dynamically */
+  --color-slate-50:  var(--canvas);
+  --color-slate-100: var(--surface);
+  --color-slate-200: var(--surface-2);
+  --color-slate-300: var(--border);
+  --color-slate-400: var(--text-3);
+  --color-slate-500: var(--text-2);
+  --color-slate-600: var(--text-2);
+  --color-slate-700: var(--border-2);
+  --color-slate-800: var(--border-2);
+  --color-slate-900: var(--surface);
+  --color-slate-950: var(--text-1);
 
-  /* Remap blue tokens → forest green */
-  --color-blue-50:  #EBF2EE;
-  --color-blue-100: #C5DACE;
-  --color-blue-200: #9DC4B0;
-  --color-blue-300: #6FA88E;
-  --color-blue-400: #3D8A6A;
-  --color-blue-500: #245C49;
-  --color-blue-600: #245C49;
-  --color-blue-700: #1A4335;
-  --color-blue-800: #122E25;
-  --color-blue-900: #0A1D17;
-  --color-blue-950: #061210;
+  /* Remap blue tokens → forest green dynamically */
+  --color-blue-50:  var(--green-s);
+  --color-blue-100: var(--green-b);
+  --color-blue-200: var(--green-b);
+  --color-blue-300: var(--green);
+  --color-blue-400: var(--green);
+  --color-blue-500: var(--green);
+  --color-blue-600: var(--green);
+  --color-blue-700: var(--green-h);
+  --color-blue-800: var(--green-h);
+  --color-blue-900: var(--green-s);
+  --color-blue-950: var(--green-s);
 
-  /* Remap emerald tokens → forest green */
-  --color-emerald-400: #245C49;
-  --color-emerald-500: #245C49;
-  --color-emerald-900: #EBF2EE;
-  --color-emerald-950: #EBF2EE;
+  /* Remap emerald tokens → forest green dynamically */
+  --color-emerald-400: var(--green);
+  --color-emerald-500: var(--green);
+  --color-emerald-900: var(--green-s);
+  --color-emerald-950: var(--green-s);
 
-  /* Remap amber/yellow → gold */
-  --color-amber-400: #B88632;
-  --color-amber-500: #B88632;
-  --color-amber-900: #F5F0E4;
-  --color-amber-950: #F5F0E4;
+  /* Remap amber/yellow → gold dynamically */
+  --color-amber-400: var(--gold);
+  --color-amber-500: var(--gold);
+  --color-amber-900: var(--gold-s);
+  --color-amber-950: var(--gold-s);
 
-  /* Remap rose/red → muted terracotta */
-  --color-rose-400:  #8C4A3C;
-  --color-rose-500:  #8C4A3C;
-  --color-rose-700:  #8C4A3C;
-  --color-rose-900:  #F5EDEB;
-  --color-rose-950:  #F5EDEB;
+  /* Remap rose/red → muted terracotta dynamically */
+  --color-rose-400:  var(--red-m);
+  --color-rose-500:  var(--red-m);
+  --color-rose-700:  var(--red-m);
+  --color-rose-900:  var(--red-s);
+  --color-rose-950:  var(--red-s);
 }
 
 html { color-scheme: light; }
+html.dark { color-scheme: dark; }
 
 body {
   background: var(--canvas);
