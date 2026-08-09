@@ -1,331 +1,690 @@
-﻿# AI Interview Agent â€” "Build the interviewer, not the interview."
+# AI Interview Agent — "Build the interviewer, not the interview."
 
-[![Deployed on Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://ai-interview-agent-opal.vercel.app/)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16.3.0-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+An adaptive AI Interview Agent built for the **ABTalks 31-Day Enterprise AI Engineering Cohort — Problem Statement 2**.
 
-An adaptive, state-driven technical interview platform built for the **ABTalks 31-Day AI Engineering Cohort**. The system dynamically evaluates candidates based on their completed cohort missions, live interview responses, and historical gapsâ€”replacing rigid static questionnaires with evidence-grounded technical dialogue.
+Rather than running a static script of fixed questions, this agent uses a **state-driven adaptive interview engine** that combines candidate background, cohort history, curriculum targets, and live interview responses to generate personalized, context-aware technical interviews.
 
----
-
-## 1. Overview
-
-**AI Interview Agent** addresses **Problem Statement 2: The Interview Agent**.
-
-In traditional technical hiring and cohort assessment, candidates are evaluated using static, one-size-fits-all question sets. These questionnaires fail to reflect a candidate's specific background, past failures, or live reasoning capabilities.
-
-This project shifts the paradigm: **"Build the interviewer, not the interview."**
-
-Instead of hardcoding a sequence of questions, the AI Interview Agent maintains an active **Interview State Machine** that synthesizes three context layers:
-1. **Candidate History**: Completed, skipped, and failed curriculum missions from the 31-day cohort.
-2. **Curriculum Grounding**: A 31-day enterprise AI engineering curriculum covering RAG, vector databases, MCP, function calling, and production observability.
-3. **Live Answer Evidence**: Per-turn scoring of technical correctness, depth, reasoning, and practicality.
-
-The system dynamically selects topics, adjusts difficulty across six progression levels, probes weak areas, prevents duplicate questions, and generates structured, evidence-grounded feedback reports upon interview completion.
+The goal is to make the experience resemble a **real technical interview rather than a scripted questionnaire**. The candidate's previous answers influence evaluation, difficulty, competency selection, follow-up questions, and final feedback.
 
 ---
 
-## 2. Live Demo
+## 🌐 Live Demo
 
-- **Live Web Application**: [https://ai-interview-agent-opal.vercel.app/](https://ai-interview-agent-opal.vercel.app/)
-- **GitHub Repository**: [https://github.com/gauranshi1707/ai-interview-agent](https://github.com/gauranshi1707/ai-interview-agent)
+**Live Application:**  
+https://ai-interview-agent-opal.vercel.app/
 
----
-
-## 3. Problem Statement
-
-Learners in AI engineering cohorts often complete complex practical missionsâ€”such as building RAG pipelines, fine-tuning models, or configuring vector indexersâ€”yet struggle to articulate their architectural decisions during live technical interviews.
-
-### The Challenge
-- **Static Questionnaires**: Traditional platforms ask the same questions regardless of whether a candidate is a junior developer with skipped topics or a senior data engineer with 31 completed missions.
-- **Unstructured Evaluation**: Human interviewers often rely on subjective impressions rather than systematic evidence logs.
-- **Superficial Feedback**: Generic AI SaaS platforms generate generic praise ("Great job!") rather than identifying specific technical gaps and actionable learning paths.
-
-### The Solution
-A personalized, curriculum-grounded AI interviewer that conducts a 8+ turn technical conversation, adjusts difficulty dynamically, handles "I don't know" responses without loop deadlocks, and compiles an evidence-backed assessment.
+**GitHub Repository:**  
+https://github.com/gauranshi1707/ai-interview-agent
 
 ---
 
-## 4. Solution Architecture & Context Layers
+# 🎯 Problem Statement
 
-The core engine evaluates candidate responses across three distinct context layers before generating each turn:
+The ABTalks AI Cohort is a **31-day enterprise AI engineering program** covering modern AI topics including:
 
-```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                    CONTEXT LAYERS                       â”‚
-â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
-â”‚  1. Candidate History   (Missions: Done / Skip / Fail)  â”‚
-â”‚  2. Curriculum Map      (31-Day AI Engineering Topics)  â”‚
-â”‚  3. Live Answer Log     (Per-turn Evidence & Scores)    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                             â”‚
-                             â–¼
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚  Adaptive Decision Engine   â”‚
-              â”‚  - Selects Topic            â”‚
-              â”‚  - Adjusts Difficulty       â”‚
-              â”‚  - Checks Duplicate Rules   â”‚
-              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                             â”‚
-                             â–¼
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚ Next Technical Question /   â”‚
-              â”‚ Structured Final Feedback   â”‚
-              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-```
+- Retrieval-Augmented Generation (RAG)
+- Vector Databases
+- Prompt Engineering
+- Agentic AI
+- Model Context Protocol (MCP)
+- AI Deployment
+- Production AI Systems
 
-1. **Candidate History Layer**: Reads completed, skipped, and failed mission IDs to prioritize unverified or previously failed topics.
-2. **Curriculum Grounding Layer**: Ensures questions map strictly to validated cohort competencies (e.g. HyDE, HNSW indexes, MCP server architecture, prompt injection defense).
-3. **Live Answer Evidence Layer**: Tracks candidate performance turn-by-turn to scale difficulty or shift focus if the candidate struggles.
+After completing the cohort, learners should be able to confidently explain the systems they built and the engineering decisions behind them.
+
+However, preparing for technical interviews and effectively communicating this knowledge remains one of the biggest challenges.
+
+A candidate may have completed a mission successfully but still struggle to explain:
+
+- Why a particular architecture was selected
+- How a system behaves in production
+- What tradeoffs were involved
+- How failures would be diagnosed
+- How different system components interact
+- How the system could be improved
+
+This project addresses that gap by converting the candidate's **learning journey into an adaptive technical interview**.
+
+Instead of following a fixed sequence of questions, the system continuously uses candidate history, curriculum grounding, and live interview evidence to decide what should happen next.
 
 ---
 
-## 5. Key Features
+# 🌟 Key Features
 
-- **Candidate Personalization**: Maps interview strategy to candidate YOE, role, and cohort mission record (e.g., Sarah 1 YOE vs Marcus 5 YOE vs David 10 YOE).
-- **Adaptive Difficulty Progression**: Dynamically shifts across 6 difficulty tiers: `fundamentals` â†’ `application` â†’ `debugging` â†’ `architecture` â†’ `tradeoffs` â†’ `production`.
-- **Context-Aware Follow-Ups**: Probes technical details based on observations from previous turns.
-- **Evidence-Based Evaluation**: Scores candidate answers across four dimensions: correctness, depth, practicality, and reasoning.
-- **Strict "I Don't Know" Handling**: Recognizes explicit non-answers ("idk", "not sure", "skip"), sets scores to `0.0`, shifts competency, and logs technical gaps without looping.
-- **Concise Technical Answer Support**: Evaluates concise but technically accurate responses based on core concept presence, preventing false failures.
-- **Duplicate Question Filtering**: Uses word-set overlap similarity (intersection / union > 60% on words longer than 4 characters) to filter rephrased or repeated questions.
-- **Topic Rotation Control**: Limits consecutive questions on the same competency to 2 turns (`consecutiveTopicCount >= 2`) to ensure broad curriculum coverage.
-- **Completion Threshold Enforcement**: Guarantees a minimum of **8 questions** and **4 distinct curriculum days** before allowing session termination.
-- **Structured Final Feedback**: Generates structured JSON feedback with `summary`, `strengths`, `gaps`, and `next` recommendations.
-- **Deterministic Fallback Engine**: Fully functional in demo mode without an `OPENAI_API_KEY`, using a deterministic question bank and fallback evaluator.
-- **Warm Editorial UI & Theme Toggle**: Styled with a warm ivory/charcoal palette, serif typography, and a zero-flash light/dark theme toggle.
+## 1. Candidate Personalisation
 
----
+The interview is grounded in the candidate's cohort history rather than treating every candidate identically.
 
-## 6. How the Interview Works
+The system can use:
 
-```
-  Candidate Selection (Roster Grid)
-                 â”‚
-                 â–¼
-      POST /api/interview (Init)
-                 â”‚
-                 â–¼
-     generateInterviewPlan()
-                 â”‚
-                 â–¼
-    generateNextQuestion() â”€â”€â–º Q1 Generated
-                                  â”‚
-                                  â–¼
-                        Candidate Input Response
-                                  â”‚
-                                  â–¼
-                       POST /api/interview (Turn)
-                                  â”‚
-                                  â–¼
-                         evaluateAnswer()
-                                  â”‚
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                 â–¼                                 â–¼
-       Record Answer Evidence             Update Skill State &
-       (Correctness, Depth, etc.)         Adapt Difficulty Tiers
-                 â”‚                                 â”‚
-                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                  â”‚
-                                  â–¼
-                    Check Threshold Criteria
-                    (Questions >= 8 & Days >= 4)
-                                  â”‚
-                 â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-            No   â”‚                                 â”‚   Yes
-  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜                                 â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-  â–¼                                                               â–¼
-generateNextQuestion()                                generateInterviewFeedback()
-  â”‚                                                               â”‚
-  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–º [ Loop Back ]                             â–¼
-                                                        Render Final Assessment
-```
+- Completed missions
+- Failed missions
+- Skipped missions
+- Attempt counts
+- Mission completion history
+- First-try performance
+- Commit-day activity
+- Years of experience
+- Candidate role
+- Education
+
+This allows the interview strategy to reflect the candidate's actual learning journey.
+
+For example, failed or skipped missions can influence which competencies receive greater attention during the interview.
 
 ---
 
-## 7. Adaptive Interview Engine
+## 2. State-Driven Adaptive Interview Engine
 
-The state engine manages an in-memory session object (`InterviewState`) per candidate session:
+The core of the application is a state-driven interview engine.
 
-```typescript
-interface InterviewState {
-  sessionId: string;
-  candidate: Candidate;
-  interviewPlan: string;
-  messages: { role: 'interviewer' | 'candidate'; content: string }[];
-  currentQuestion: string | null;
-  askedQuestions: string[];
-  questionCount: number;
-  curriculumDaysCovered: number[];
-  competenciesCovered: string[];
-  currentCompetency: string | null;
-  skillState: Record<string, SkillCompetencyState>;
-  evidences: AnswerEvidence[];
-  observations: string[];
-  difficulty: 'fundamentals' | 'application' | 'debugging' | 'architecture' | 'tradeoffs' | 'production';
-  consecutiveTopicCount: number;
-  done: boolean;
-  feedback: InterviewFeedback | null;
-}
+Instead of treating every request independently, the system maintains interview state across turns.
+
+The state tracks information including:
+
+- `skillState`
+- `observations`
+- `askedQuestions`
+- `curriculumDaysCovered`
+- `competenciesCovered`
+- `consecutiveTopicCount`
+- `difficulty`
+- Answer evidence
+- Current competency
+- Interview messages
+
+This allows later questions to be informed by everything that has already happened during the interview.
+
+---
+
+# 🧠 Three-Layer Context Model
+
+The interview engine combines three major sources of context.
+
+### Layer 1 — Candidate History
+
+- Completed Missions
+- Failed Missions
+- Skipped Missions
+- Attempts
+- Learning Signals
+- Experience Level
+
+This represents what the candidate has already learned and where they may have struggled.
+
+### Layer 2 — Curriculum Grounding
+
+- Modules
+- Curriculum Days
+- Topics
+- Learning Objectives
+- Tools
+
+This ensures that interview questions remain grounded in the supplied cohort curriculum.
+
+### Layer 3 — Live Interview Evidence
+
+- Previous Answers
+- Evaluation Scores
+- Observed Strengths
+- Identified Gaps
+- Current Competency
+- Difficulty
+- Previously Asked Questions
+
+This represents what the candidate is actually demonstrating during the current interview.
+
+Together:
+
+```text
+Candidate History
+        +
+Curriculum Grounding
+        +
+Live Interview Evidence
+        |
+        v
+Adaptive Interview State
+        |
+        v
+Next Question
 ```
 
-The engine prevents static script behavior by evaluating `consecutiveTopicCount` and `difficulty` state after every turn:
-- If a candidate answers 2 consecutive questions on the same topic, the engine forces a topic switch.
-- If the evaluator signals ``increase_difficulty`` for a strong answer, or ``decrease_difficulty`` for a weak one, the engine advances or retreats one step along the progression ladder.
+---
+
+# 🏗️ Application Architecture
+
+```text
++----------------------------+
+| Candidate Profile          |
+| + Cohort Data              |
++-------------+--------------+
+              |
+              v
++----------------------------+
+| Interview Planner          |
++-------------+--------------+
+              |
+              v
++----------------------------+
+| Question Generator         |
++-------------+--------------+
+              |
+              v
++----------------------------+
+| Candidate Answer           |
++-------------+--------------+
+              |
+              v
++----------------------------+
+| Answer Evaluator           |
++-------------+--------------+
+              |
+              v
++----------------------------+
+| Adaptive Decision Engine   |
+|                            |
+| - Difficulty               |
+| - Competency               |
+| - Evidence                 |
+| - Topic Coverage           |
+| - Duplicate Checks         |
++-------------+--------------+
+              |
+        +-----+------+
+        |            |
+        v            v
++---------------+  +----------------+
+| Next Question |  | Final Feedback |
++---------------+  +----------------+
+```
 
 ---
 
-## 8. Adaptivity & Difficulty Progression
+# 🤖 LLM + Deterministic Fallback Architecture
 
-The interview engine advances through six explicit difficulty levels:
+The application supports both an LLM-powered reasoning path and a deterministic fallback path.
 
-| Tier | Level Name | Target Knowledge & Scenario |
-|---|---|---|
-| **1** | `fundamentals` | Basic concepts, definitions, component roles (e.g., embeddings vs vectors). |
-| **2** | `application` | Practical usage, API integrations, tool calling end-to-end. |
-| **3** | `debugging` | Troubleshooting latency, hallucination detection, index accuracy loss. |
-| **4** | `architecture` | System design, multi-agent decomposition, state orchestration. |
-| **5** | `tradeoffs` | Evaluating cost vs latency vs accuracy (e.g. HNSW indexing, reranking). |
-| **6** | `production` | Rate limiting, observability metrics, prompt injection defense. |
+```text
+                 Interview Request
+                        |
+                        v
+                +---------------+
+                | Interview      |
+                | Engine         |
+                +-------+-------+
+                        |
+                 +------+------+
+                 |             |
+                 v             v
+          LLM Available    No API Key
+                 |             |
+                 v             v
+          LLM Reasoning   Deterministic
+          + Evaluation    Fallback
+                 |             |
+                 +------+------+
+                        |
+                        v
+                  Shared State
+                        |
+                        v
+                  Next Question
+                        |
+                        v
+                  Final Feedback
+```
 
-Candidate experience level initializes the starting difficulty:
-- **< 2 YOE**: Starts at `fundamentals`
-- **2â€“4 YOE**: Starts at `application`
-- **5â€“8 YOE**: Starts at `debugging`
-- **9+ YOE**: Starts at `architecture`
+This architecture ensures that the core interview experience does not completely depend on external model availability.
 
 ---
 
-## 9. Candidate Personalization
+# 🧠 LLM Mode
 
-Candidate profiles directly dictate topic selection and initial planning:
+When an LLM API key is configured, the application uses dedicated modules for different reasoning responsibilities:
+
+- Interview planning
+- Question generation
+- Answer evaluation
+- Feedback generation
+
+Relevant modules include:
+
+```text
+src/lib/interview/
+├── planner.ts
+├── evaluator.ts
+├── question-generator.ts
+├── feedback.ts
+└── llm.ts
+```
+
+The LLM layer is separated from the core interview state so that reasoning, evaluation, question generation, and state management remain distinct responsibilities.
+
+API credentials are kept server-side.
+
+---
+
+# 🛟 Deterministic Demo Fallback
+
+The application remains functional even when no LLM API key is available.
+
+If the LLM provider is unavailable, the system automatically falls back to deterministic interview logic.
+
+The fallback supports:
+
+- Interview initialization
+- Question generation
+- Multi-turn state
+- Curriculum coverage
+- Candidate-aware topic selection
+- Answer evaluation
+- "I don't know" detection
+- Duplicate prevention
+- Topic rotation
+- Difficulty state
+- Final feedback
+
+This provides a reliable demonstration path even when external model access is unavailable.
+
+The fallback mode is particularly important for hackathon judging because the core interview flow can still be demonstrated without requiring an external API key.
+
+---
+
+# 🎤 Adaptive Interviewing
+
+The system is designed around a simple principle:
+
+> **The next question should depend on what the candidate has already demonstrated.**
+
+Question selection can take into account:
+
+- Candidate experience
+- Completed missions
+- Failed missions
+- Skipped missions
+- Current competency
+- Previous answers
+- Answer evidence
+- Existing knowledge gaps
+- Current difficulty
+- Previously assessed topics
+- Curriculum coverage
+- Consecutive topic limits
+
+The interview can move through different levels of technical depth:
+
+```text
+Fundamentals
+      |
+      v
+Application
+      |
+      v
+Debugging
+      |
+      v
+Architecture
+      |
+      v
+Tradeoffs
+      |
+      v
+Production
+```
+
+The actual progression depends on the candidate's demonstrated performance and evaluator signals.
+
+---
+
+# 🔄 Context-Aware Follow-Up Questions
+
+The agent maintains context across interview turns.
+
+For example:
+
+### Candidate
+
+> Embeddings convert text into high-dimensional vector representations that capture semantic meaning.
+
+Instead of simply asking another definition question, the interviewer can move toward application:
+
+### Interviewer
+
+> Your embeddings look good, but retrieval precision is poor. How would you diagnose the problem?
+
+This allows the interview to progress from:
+
+```text
+Definition
+    |
+    v
+Understanding
+    |
+    v
+Application
+    |
+    v
+Debugging
+    |
+    v
+Architecture
+    |
+    v
+Tradeoffs
+```
+
+when appropriate.
+
+The objective is to create a technical conversation rather than a list of disconnected questions.
+
+---
+
+# 🧩 Handling Weak Answers & "I Don't Know"
+
+The system explicitly detects responses such as:
+
+- `I don't know`
+- `idk`
+- `no idea`
+- `not sure`
+
+These responses are not treated as evidence of technical understanding.
+
+Instead:
+
+```text
+Candidate Answer
+       |
+       v
+"I don't know"
+       |
+       v
+No Demonstrated Knowledge
+       |
+       v
+Evidence Recorded
+       |
+       v
+Competency Updated
+       |
+       v
+Interview Moves Forward
+```
+
+This prevents the evaluator from generating false strengths simply because a candidate mentioned a few technical terms elsewhere.
+
+It also prevents the interview from becoming stuck repeatedly probing a topic the candidate has already failed to demonstrate.
+
+---
+
+# 📊 Evidence-Based Evaluation
+
+The evaluator does not rely solely on whether a response contains a keyword.
+
+The interview tracks evidence associated with candidate responses.
+
+Evaluation considers signals such as:
+
+- Technical correctness
+- Depth
+- Practical understanding
+- Reasoning
+- Demonstrated technical terminology
+- Explicit lack of knowledge
+
+The system distinguishes between different response types.
+
+### Strong Technical Answer
+
+```text
+Technically correct
+        +
+Sufficient evidence
+        +
+Relevant explanation
+        |
+        v
+Demonstrated Strength
+```
+
+### Concise but Technically Correct Answer
+
+```text
+Technically correct
+        +
+Short explanation
+        |
+        v
+Can still receive appropriate credit
+```
+
+### Weak Answer
+
+```text
+Limited evidence
+        +
+Incorrect or unsupported explanation
+        |
+        v
+Knowledge Gap
+```
+
+### Explicit IDK
+
+```text
+"I don't know"
+        |
+        v
+No Demonstrated Knowledge
+```
+
+---
+
+# 🐛 Evaluation Edge Case & Fix
+
+During final QA, a specific issue was identified in the deterministic evaluator.
+
+A candidate could provide a concise but technically correct answer containing strong technical evidence, while the combined depth, practicality, and reasoning score was low enough to fall below the original strength threshold.
+
+This created a scoring dead zone:
+
+```text
+Too strong to be a gap
+        but
+Too weak to be a strength
+```
+
+The result could incorrectly become:
 
 ```json
 {
-  "id": "cand-001",
-  "name": "Sarah",
-  "role": "Junior AI Engineer",
-  "yearsOfExperience": 1,
-  "education": "B.S. Computer Science",
-  "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9],
-  "failedMissions": [10, 11, 15],
-  "skippedMissions": [12, 13, 14]
+  "strengths": [],
+  "gaps": []
 }
 ```
 
-- **Topic Prioritization**: The engine prioritizes candidate **failed missions** (Day 10 RAG, Day 11 Advanced RAG) and **skipped missions** (Day 12 Function Calling) before testing general completed topics.
-- **Customized Strategy**: Sarah (1 YOE) begins with core RAG failure modes, whereas David (10 YOE, 31 completed missions) is immediately challenged with multi-agent orchestration and MCP security.
+with an inappropriate failure summary.
+
+The fallback evaluator was subsequently updated to:
+
+- Better recognize technically strong concise answers
+- Expand relevant technical terminology
+- Eliminate the scoring dead zone
+- Preserve strict "I don't know" handling
+- Keep final summaries consistent with collected evidence
+
+The scenario was re-tested with:
+
+- Strong candidates
+- Mixed candidates
+- Concise technical candidates
+- All-IDK candidates
+
+The previously failing concise-answer scenario was successfully resolved.
 
 ---
 
-## 10. Follow-Up & Context Handling
+# 🔁 Duplicate Question & Loop Prevention
 
-The system retains past turns to build contextually coherent follow-up questions:
+The system maintains previously asked questions and uses multiple mechanisms to prevent repetition.
 
-### Context Adaptation Example
-> **Turn 1 (Interviewer)**: *"Walk me through a RAG pipeline. At what points can it fail, and how would you detect each failure mode?"*
-> 
-> **Candidate Answer**: *"We perform chunking, store vector embeddings in ChromaDB, retrieve using cosine similarity, and send retrieved context to the LLM."*
-> 
-> **Evaluation**: Correctness = `1.0`, Depth = `0.6` (concise technical response). Topic: `Retrieval Augmented Generation (RAG)`.
-> 
-> **Turn 2 (Follow-up Question)**: *"A user complains the chatbot is hallucinating despite retrieval being active. What would you check first?"*
+These include:
 
----
+- Exact question matching
+- Question normalization
+- Word-set overlap similarity
+- Intersection / union similarity threshold
+- Consecutive-topic limits
+- Curriculum coverage tracking
 
-## 11. Evaluation System
+The word-set comparison helps identify questions that are effectively duplicates even when they have been slightly rephrased.
 
-Answer evaluation parses candidate input across four weighted dimensions:
+This helps prevent scenarios such as:
 
-1. **Correctness (0.0 - 1.0)**: Technical accuracy of concepts mentioned.
-2. **Depth (0.0 - 1.0)**: Thoroughness of explanation and detail.
-3. **Practicality (0.0 - 1.0)**: Mentions of production tools, implementation verbs (`deploy`, `index`, `query`).
-4. **Reasoning (0.0 - 1.0)**: Presence of architectural justification (`because`, `tradeoff`, `compared`).
-
-### Scoring Criteria
-- **"I Don't Know" / IDK**: `correctness = 0.0`, `depth = 0.0`, `isDontKnow = true`. Mapped directly to gaps.
-- **Concise Technical Answers**: High correctness (`>= 0.7`) combined with 2+ matched technical terms guarantees classification as a demonstrated strength, avoiding false failures.
-- **Non-Technical Fillers**: Long responses containing zero technical terms are assigned `correctness = 0.1` and flagged as weak.
-
----
-
-## 12. Deterministic Fallback Mode
-
-When `OPENAI_API_KEY` is not present in the environment (Demo Mode), the application seamlessly switches to `fallback.ts`:
-
-- **Question Bank**: 12 curated curriculum questions covering RAG, MCP, function calling, agents, observability, and vector indexing.
-- **Rule-Based Evaluator**: Evaluates technical keyword matches, term densities, connector words, and IDK patterns.
-- **Session Continuity**: Maintains exact multi-turn state, threshold checks, topic rotation, and structured JSON feedback generation.
-- **No External Dependency**: Guarantees the application runs reliably in zero-config demo environments.
-
----
-
-## 13. LLM Architecture
-
-When an `OPENAI_API_KEY` is configured, the system invokes specialized modular LLM prompts:
-
-| Module | File | Responsibility | Output Format |
-|---|---|---|---|
-| **Planner** | `planner.ts` | Generates candidate-specific interview strategy | Text string |
-| **Question Generator** | `question-generator.ts` | Synthesizes contextual technical question based on difficulty & history | JSON (`{ question, competency, day }`) |
-| **Evaluator** | `evaluator.ts` | Grades technical response across 4 scoring axes & observations | JSON (`EvaluationResult`) |
-| **Feedback** | `feedback.ts` | Compiles final assessment summary, strengths, gaps, and recommendations | JSON (`InterviewFeedback`) |
-| **LLM Client** | `llm.ts` | Manages OpenAI API calls (`gpt-4o-mini`) with JSON mode support | String / JSON |
-
-*Security*: All API requests and credentials remain strictly server-side inside Next.js Route Handlers.
-
----
-
-## 14. Architecture Diagram
-
-```
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                          NEXT.JS FRONTEND                              â”‚
-â”‚   Landing Roster  â”€â”€â–º  Interview Console  â”€â”€â–º  Assessment Report UI    â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                   â”‚
-                         POST /api/interview
-                                   â”‚
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                           API ROUTE HANDLER                            â”‚
-â”‚                 (Session Validation & Error Handling)                  â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                   â”‚
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                       ADAPTIVE INTERVIEW ENGINE                        â”‚
-â”‚                                                                        â”‚
-â”‚   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”   â”‚
-â”‚   â”‚   planner.ts     â”‚   â”‚ question-gen.ts  â”‚   â”‚   evaluator.ts   â”‚   â”‚
-â”‚   â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜   â”‚
-â”‚            â”‚                      â”‚                      â”‚             â”‚
-â”‚            â–¼                      â–¼                      â–¼             â”‚
-â”‚    [Strategy Plan]        [Next Question]        [Answer Evidence]     â”‚
-â”‚                                                                        â”‚
-â”‚   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€   â”‚
-â”‚                         state.ts (Session Store)                       â”‚
-â”‚     - Asked Questions    - Competencies Covered   - Skill Tiers        â”‚
-â”‚     - Evidence Logs      - Difficulty State       - Topic Counts       â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                   â”‚
-                     (If OPENAI_API_KEY Unset)
-                                   â”‚
-â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-â”‚                      DETERMINISTIC FALLBACK BANK                       â”‚
-â”‚       - Curated Questions   - Keyword Evaluator   - Rule Feedback      â”‚
-â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+```text
+Question
+   |
+   v
+Weak Answer
+   |
+   v
+Same Question
+   |
+   v
+Same Question Rephrased
+   |
+   v
+Same Topic Repeated Indefinitely
 ```
 
+Instead, the engine can rotate toward another relevant competency while maintaining the minimum curriculum coverage requirement.
+
 ---
 
-## 15. API Specification (`POST /api/interview`)
+# 📈 Adaptive Difficulty
 
-### 1. Initialization Request
-**Endpoint**: `POST /api/interview`
+The interview maintains an internal difficulty state.
+
+The progression ladder contains:
+
+```text
+fundamentals
+application
+debugging
+architecture
+tradeoffs
+production
+```
+
+The evaluator provides a recommendation to increase, decrease, or maintain the current difficulty.
+
+The engine then adjusts the difficulty state while respecting the overall interview strategy and curriculum coverage.
+
+Strong performance can lead to deeper questions.
+
+Weaker evidence can cause the interview to remain at an appropriate level or move to another competency instead of repeatedly forcing the candidate into questions they cannot answer.
+
+---
+
+# ⏱️ Interview Completion Requirements
+
+The interview engine explicitly enforces the core challenge constraints.
+
+The interview must:
+
+- Ask at least **8 questions**
+- Cover at least **4 different curriculum days**
+
+The state tracks:
+
+- `questionCount`
+- `curriculumDaysCovered`
+
+Completion is only allowed once the required interview coverage has been achieved.
+
+This prevents an interview from accidentally terminating after only a few turns.
+
+---
+
+# 📝 Structured Final Feedback
+
+At the end of the interview, the system produces structured feedback containing:
+
+### Summary
+
+An overall assessment of the candidate's demonstrated technical capability.
+
+### Strengths
+
+Competencies where sufficient evidence was demonstrated.
+
+### Gaps
+
+Competencies where sufficient understanding was not demonstrated.
+
+### Next Steps
+
+Actionable preparation areas based on the observed gaps.
+
+Example:
 
 ```json
 {
-  "sessionId": "session-cand-001-9f2b1a8c",
+  "summary": "Demonstrated strong foundational knowledge across retrieval and RAG.",
+  "strengths": [
+    "Clear explanation of vector embeddings",
+    "Understood RAG grounding"
+  ],
+  "gaps": [
+    "Shallow explanation of production observability"
+  ],
+  "next": [
+    "Practice retrieval evaluation",
+    "Study LLM monitoring frameworks"
+  ]
+}
+```
+
+---
+
+# 📋 Problem Statement Alignment
+
+| Requirement | Implementation |
+|---|---|
+| Conversational technical interview | Multi-turn interview through `POST /api/interview` |
+| Assess candidate understanding | Evidence-based answer evaluation |
+| Assess completed missions | Candidate history + mission state |
+| Personalized interview | Candidate profile + cohort history |
+| Adaptive questioning | Dynamic difficulty and competency state |
+| Intelligent follow-ups | Previous answers + observations + evidence |
+| Maintain context | Server-side interview session state |
+| Minimum 8 questions | Completion guard |
+| Minimum 4 curriculum days | Curriculum coverage guard |
+| Structured feedback | Summary + strengths + gaps + next |
+| Required HTTP endpoint | `POST /api/interview` |
+| Session state | `sessionId` |
+| No authentication required | Public interview flow |
+| LLM flexibility | LLM modules + deterministic fallback |
+| Synthetic data support | Supplied curriculum and candidate datasets |
+
+---
+
+# 🔌 API Contract
+
+The application exposes the required endpoint:
+
+```text
+POST /api/interview
+```
+
+## 1. Initial Request — Start Interview
+
+### Request
+
+```json
+{
+  "sessionId": "session-cand-001-abc",
   "candidate": {
     "id": "cand-001",
     "name": "Sarah",
@@ -335,7 +694,9 @@ When an `OPENAI_API_KEY` is configured, the system invokes specialized modular L
     "completedMissions": [1, 2, 3, 4, 5, 6, 7, 8, 9],
     "failedMissions": [10, 11, 15],
     "skippedMissions": [12, 13, 14],
-    "attempts": { "10": 3 },
+    "attempts": {
+      "10": 3
+    },
     "commitDays": 14,
     "missionsCompleted": 9,
     "firstTryPerformance": 0.6
@@ -343,230 +704,616 @@ When an `OPENAI_API_KEY` is configured, the system invokes specialized modular L
 }
 ```
 
-**Response (`200 OK`)**:
+### Response
+
 ```json
 {
-  "reply": "Walk me through a RAG pipeline. At what points can it fail, and how would you detect each failure mode?",
-  "done": false,
-  "meta": {
-    "questionCount": 1,
-    "curriculumDaysCovered": [10],
-    "competenciesCovered": ["Retrieval Augmented Generation (RAG)"],
-    "currentCompetency": "Retrieval Augmented Generation (RAG)",
-    "difficulty": "fundamentals"
-  }
+  "reply": "Welcome. Let's begin your interview.",
+  "done": false
 }
 ```
 
 ---
 
-### 2. Subsequent Turn Request
-**Endpoint**: `POST /api/interview`
+## 2. Subsequent Turn — Candidate Answer
+
+### Request
 
 ```json
 {
-  "sessionId": "session-cand-001-9f2b1a8c",
-  "message": "We chunk documents, convert them to vector embeddings using OpenAI models, index in ChromaDB, retrieve using cosine similarity, and pass context to the LLM."
+  "sessionId": "session-cand-001-abc",
+  "message": "Embeddings convert text into high-dimensional vector representations that capture semantic meaning."
 }
 ```
 
-**Response (`200 OK`)**:
+### Response
+
 ```json
 {
-  "reply": "A user complains the chatbot is hallucinating despite retrieval being active. What would you check first?",
-  "done": false,
-  "meta": {
-    "questionCount": 2,
-    "curriculumDaysCovered": [10],
-    "competenciesCovered": ["Retrieval Augmented Generation (RAG)"],
-    "currentCompetency": "Retrieval Augmented Generation (RAG)",
-    "difficulty": "application"
-  }
+  "reply": "Your embeddings look good, but retrieval precision is poor. How would you diagnose the problem?",
+  "done": false
 }
 ```
+
+The `sessionId` associates the response with the existing interview state.
 
 ---
 
-### 3. Final Turn Response (Completion)
-When `questionCount >= 8` and `curriculumDaysCovered.length >= 4`:
+## 3. Completion Response
 
-**Response (`200 OK`)**:
 ```json
 {
   "reply": "Interview completed.",
   "done": true,
   "feedback": {
-    "summary": "Sarah demonstrated solid understanding in some areas (Retrieval Augmented Generation (RAG), Evaluation Metrics), but did not demonstrate knowledge in other assessed topics during this interview.",
+    "summary": "Demonstrated strong foundational knowledge across retrieval and RAG.",
     "strengths": [
-      "Demonstrated understanding of Retrieval Augmented Generation (RAG).",
-      "Demonstrated understanding of Evaluation Metrics."
+      "Clear explanation of vector embeddings",
+      "Understood RAG grounding"
     ],
     "gaps": [
-      "Did not demonstrate understanding of Function Calling during this interview."
+      "Shallow explanation of production observability"
     ],
     "next": [
-      "Practice building hands-on function calling and multi-agent workflows."
+      "Practice retrieval evaluation",
+      "Study LLM monitoring frameworks"
     ]
-  },
-  "meta": {
-    "questionCount": 8,
-    "curriculumDaysCovered": [10, 11, 12, 20, 23, 26, 28, 7],
-    "competenciesCovered": ["RAG", "Advanced RAG", "Function Calling", "Evaluation Metrics", "Security", "Observability", "Readiness", "Embeddings"],
-    "currentCompetency": "Embeddings",
-    "difficulty": "application"
   }
 }
 ```
 
 ---
 
-## 16. Problem Statement Compliance Matrix
+## 4. API Validation
 
-| Requirement | Implementation Details | Status |
-|---|---|---|
-| **1. Conversational Technical Interview** | Interactive turn-by-turn dialogue via Next.js API & custom UI | âœ… PASS |
-| **2. Candidate Mission Assessment** | Personalizes interview based on completed, skipped, and failed days | âœ… PASS |
-| **3. Natural Adaptation** | Dynamic difficulty scaling across 6 tiers based on live scoring | âœ… PASS |
-| **4. Intelligent Follow-ups** | Probes deeper into technical nuances when candidate provides partial answers | âœ… PASS |
-| **5. Maintain Context** | Preserves full turn history and skill state in `__sessionStore` | âœ… PASS |
-| **6. Minimum 8 Questions** | Enforced by `MIN_QUESTIONS = 8` in `engine.ts` | âœ… PASS |
-| **7. Minimum 4 Curriculum Days** | Enforced by `MIN_CURRICULUM_DAYS = 4` in `engine.ts` | âœ… PASS |
-| **8. Structured Final Feedback** | JSON schema with `summary`, `strengths`, `gaps`, `next` | âœ… PASS |
-| **9. POST /api/interview** | Fully implemented route handling init, turns, errors, and completion | âœ… PASS |
-| **10. Session State via sessionId** | State stored and retrieved per `sessionId` key | âœ… PASS |
-| **11. No Authentication Required** | Direct API access route with validation checks | âœ… PASS |
-| **12. Deterministic Fallback Mode** | Complete zero-dependency execution when API key is missing | âœ… PASS |
+The API validates request and session state.
 
----
+### Missing Session ID
 
-## 17. Tech Stack
-
-- **Framework**: [Next.js 16.3.0](https://nextjs.org/) (App Router, Turbopack)
-- **Language**: [TypeScript 5.0](https://www.typescriptlang.org/)
-- **UI Library**: [React 19.2.8](https://react.dev/)
-- **Styling**: [Tailwind CSS v4.0](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **AI Integration**: [OpenAI API](https://platform.openai.com/) (`gpt-4o-mini`)
-- **Deployment**: [Vercel Platform](https://vercel.com/)
-
----
-
-## 18. Project Structure
-
+```json
+{
+  "error": "Missing or invalid sessionId"
+}
 ```
+
+### Missing Candidate During Initialization
+
+```json
+{
+  "error": "No active session for this sessionId. Provide a candidate to initialize."
+}
+```
+
+### Missing Message on an Active Session
+
+```json
+{
+  "error": "Provide a message for ongoing sessions"
+}
+```
+
+### Already Completed Session
+
+```json
+{
+  "reply": "This interview session has already been completed.",
+  "done": true
+}
+```
+
+---
+
+# 🧪 Testing & Verification
+
+The project was validated using:
+
+```bash
+# Type check
+npx tsc --noEmit
+
+# Linting
+npm run lint
+
+# Production build
+npm run build
+```
+
+The final QA process additionally tested:
+
+- API initialization
+- Sequential interview turns
+- Multiple turns using the same `sessionId`
+- Missing `sessionId`
+- Missing candidate
+- Missing message
+- Empty messages
+- Whitespace-only messages
+- Completed sessions
+- Strong technical answers
+- Mixed technical answers
+- Concise technical answers
+- Weak answers
+- "I don't know" answers
+- All-IDK interviews
+- Multiple candidate profiles
+- Adaptive difficulty
+- Curriculum coverage
+- Duplicate-question prevention
+- Context preservation
+- Fallback mode without an API key
+- Final structured feedback
+- Frontend integration
+- Theme switching
+- Repository state
+
+---
+
+# 🧪 Candidate Simulation Results
+
+The fallback engine was tested using different synthetic candidate behaviors.
+
+## Junior / Mixed Candidate
+
+The candidate provided a mixture of technically correct answers and explicit `"I don't know"` responses.
+
+Expected behavior:
+
+- Demonstrated competencies become strengths
+- Unsupported areas become gaps
+- IDK answers do not create false strengths
+- The interview continues instead of looping
+
+## Mid-Level / Strong Candidate
+
+The candidate consistently provided technically relevant answers.
+
+Expected behavior:
+
+- Strong evidence across assessed competencies
+- Increasing difficulty
+- Multiple strengths
+- Few or no gaps
+
+## Senior / Concise Technical Candidate
+
+The candidate provided technically correct but concise answers.
+
+This scenario was specifically important because the initial evaluator could under-score concise answers.
+
+After the evaluation fix:
+
+- Technically correct concise answers receive appropriate credit
+- Strengths are populated correctly
+- False failure summaries are avoided
+- No false strengths are introduced for IDK answers
+
+## All-IDK Candidate
+
+A candidate responding with `"I don't know"` throughout the interview is expected to produce:
+
+```text
+Strengths: []
+Gaps: multiple assessed competencies
+```
+
+with a final summary indicating that the candidate did not demonstrate sufficient technical knowledge.
+
+This behavior was explicitly tested after the evaluator changes.
+
+---
+
+# 🧪 Final QA Results
+
+| Area | Result |
+|---|---|
+| TypeScript | ✅ PASS |
+| ESLint | ✅ PASS |
+| Production Build | ✅ PASS |
+| API Contract | ✅ PASS |
+| Multi-turn Interview | ✅ PASS |
+| Candidate Personalization | ✅ PASS |
+| Adaptive Difficulty | ✅ PASS |
+| Context Preservation | ✅ PASS |
+| Follow-up Questions | ✅ PASS |
+| 8 Question Minimum | ✅ PASS |
+| 4 Curriculum Day Minimum | ✅ PASS |
+| IDK Handling | ✅ PASS |
+| Concise Answer Evaluation | ✅ PASS |
+| Duplicate Prevention | ✅ PASS |
+| Fallback Mode | ✅ PASS |
+| Structured Feedback | ✅ PASS |
+| Frontend Integration | ✅ PASS |
+| Theme Toggle | ✅ PASS |
+| Security Checks | ✅ PASS |
+| Repository State | ✅ CLEAN |
+
+No critical or high-priority issues remained after the final audit.
+
+The only non-blocking observation from the final API audit was that malformed JSON sent directly to the API can result in an HTTP 500 response from the route's JSON parsing path. This does not affect the normal application flow or the stated minimum requirements.
+
+---
+
+# 🗂️ Project Structure
+
+```text
 ai-interview-agent/
-â”œâ”€â”€ data/
-â”‚   â”œâ”€â”€ candidates.json           # Cohort candidate roster profiles
-â”‚   â””â”€â”€ curriculum.json           # 31-Day AI Engineering curriculum map
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ app/
-â”‚   â”‚   â”œâ”€â”€ api/
-â”‚   â”‚   â”‚   â””â”€â”€ interview/
-â”‚   â”‚   â”‚       â””â”€â”€ route.ts      # POST /api/interview API Handler
-â”‚   â”‚   â”œâ”€â”€ interview/
-â”‚   â”‚   â”‚   â””â”€â”€ [sessionId]/
-â”‚   â”‚   â”‚       â””â”€â”€ page.tsx      # Active Interview Route Page
-â”‚   â”‚   â”œâ”€â”€ globals.css           # Global theme variables & typography
-â”‚   â”‚   â”œâ”€â”€ layout.tsx            # Root layout with theme script injection
-â”‚   â”‚   â””â”€â”€ page.tsx              # Landing Candidate Selection Roster
-â”‚   â”œâ”€â”€ components/
-â”‚   â”‚   â”œâ”€â”€ InterviewConsole.tsx  # Interview workspace & feedback report UI
-â”‚   â”‚   â””â”€â”€ ThemeToggle.tsx       # Light/Dark mode toggle component
-â”‚   â””â”€â”€ lib/
-â”‚       â””â”€â”€ interview/
-â”‚           â”œâ”€â”€ candidates.ts     # Candidate dataset loader
-â”‚           â”œâ”€â”€ curriculum.ts     # Curriculum dataset loader
-â”‚           â”œâ”€â”€ engine.ts         # Main state machine engine
-â”‚           â”œâ”€â”€ evaluator.ts      # Multi-axis answer evaluator
-â”‚           â”œâ”€â”€ fallback.ts       # Deterministic demo engine & bank
-â”‚           â”œâ”€â”€ feedback.ts       # Evidence-backed feedback generator
-â”‚           â”œâ”€â”€ llm.ts            # OpenAI client wrapper
-â”‚           â”œâ”€â”€ planner.ts        # Strategy plan generator
-â”‚           â”œâ”€â”€ question-generator.ts # Contextual question generator
-â”‚           â”œâ”€â”€ state.ts          # In-memory session store
-â”‚           â””â”€â”€ types.ts          # TypeScript interfaces
-â”œâ”€â”€ .env.example                  # Environment configuration template
-â”œâ”€â”€ next.config.ts                # Next.js configuration
-â”œâ”€â”€ package.json                  # Dependencies & build scripts
-â”œâ”€â”€ PROMPTS.md                    # Detailed AI prompts & engineering log
-â””â”€â”€ README.md                     # Project documentation
+│
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── interview/
+│   │   │       └── route.ts
+│   │   │
+│   │   ├── interview/
+│   │   │   └── [sessionId]/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── components/
+│   │   ├── InterviewConsole.tsx
+│   │   └── ThemeToggle.tsx
+│   │
+│   └── lib/
+│       └── interview/
+│           ├── engine.ts
+│           ├── evaluator.ts
+│           ├── fallback.ts
+│           ├── feedback.ts
+│           ├── llm.ts
+│           ├── planner.ts
+│           ├── question-generator.ts
+│           └── state.ts
+│
+├── public/
+├── curriculum.json
+├── candidates.json
+├── technical-spec.md
+├── PROMPTS.md
+├── .env.example
+├── package.json
+├── package-lock.json
+└── README.md
 ```
 
 ---
 
-## 19. Local Setup
+# 🎨 Frontend & Design
 
-### 1. Clone & Install
-```bash
-git clone https://github.com/gauranshi1707/ai-interview-agent.git
-cd ai-interview-agent
-npm install
-```
+The frontend is designed as a **technical assessment console rather than a generic chatbot**.
 
-### 2. Configure Environment (Optional)
-Copy `.env.example` to `.env.local`:
-```bash
-cp .env.example .env.local
-```
-Add your OpenAI API key:
+The interface includes:
+
+- Candidate selection
+- Candidate context
+- Interview track
+- Current competency
+- Interview progress
+- Interviewer questions
+- Candidate response area
+- Final assessment
+- Demonstrated strengths
+- Knowledge gaps
+- Recommended next steps
+- Theme toggle
+
+The visual system was deliberately refined away from a generic AI dashboard aesthetic.
+
+The final design uses:
+
+- Warm neutral surfaces
+- Deep forest green accents
+- Muted brass/gold details
+- Thin borders
+- Minimal shadows
+- Restrained semantic colors
+- Clear typography hierarchy
+- Subtle geometric elements
+- Consistent spacing and component proportions
+
+The application also supports a light/dark theme toggle without changing the underlying interview logic.
+
+---
+
+# 🔐 Security & Configuration
+
+API credentials are intended to remain server-side.
+
+The LLM configuration is controlled through environment variables:
+
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 ```
-*Note*: If `OPENAI_API_KEY` is omitted, the application automatically runs in **Deterministic Fallback Demo Mode**.
 
-### 3. Run Development Server
+The value shown above is only a placeholder.
+
+**No real API key is included in this repository or README.**
+
+If `OPENAI_API_KEY` is omitted, the application automatically operates in deterministic Demo Fallback Mode.
+
+The candidate and curriculum data supplied for the hackathon are synthetic.
+
+---
+
+# 📱 Scope & Out of Scope
+
+The following were intentionally kept outside the scope of this implementation:
+
+- Voice interaction
+- User authentication
+- Persistent user accounts
+- Long-term conversation history
+- Mobile applications
+
+The implementation focuses specifically on the adaptive technical interview-agent problem described in the challenge.
+
+---
+
+# 🚀 Quick Start & Local Setup
+
+## Prerequisites
+
+- Node.js 18+
+- npm
+
+## Clone the Repository
+
+```bash
+git clone https://github.com/gauranshi1707/ai-interview-agent.git
+cd ai-interview-agent
+```
+
+## Install Dependencies
+
+```bash
+npm install
+```
+
+## Optional — Configure LLM Mode
+
+Copy the environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+Then add your own API key:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+```
+
+If no API key is configured, the application automatically uses deterministic fallback mode.
+
+## Run Development Server
+
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+Open:
+
+```text
+http://localhost:3000
+```
 
 ---
 
-## 20. Testing & Validation
+# 🏭 Production Build
 
-The repository has been validated against all static checks and API requirements:
+Before deployment, the project can be validated with:
 
 ```bash
-# 1. Type Safety Check
-npx tsc --noEmit
-
-# 2. Code Quality & Formatting
 npm run lint
-
-# 3. Production Build Validation
+npx tsc --noEmit
 npm run build
 ```
 
-- **TypeScript**: 0 compilation errors.
-- **ESLint**: 0 errors, 0 warnings.
-- **Production Build**: Successful static page generation and dynamic route compilation.
+The production build was successfully validated during the final QA process.
+
+The deployed application is hosted on Vercel.
 
 ---
 
-## 21. UI / UX Design
+# 🤖 AI-Assisted Development
 
-The user interface was designed with a **Warm Editorial & Assessment Workspace** visual identity:
-- **Ivory & Charcoal Palette**: Warm off-white background (`#F7F4EC`), deep charcoal text (`#171A18`), forest green accents (`#245C49`), and muted gold highlights (`#B88632`).
-- **Typography Hierarchy**: Playfair Display serif for primary hero titles and question indices, paired with Inter for body text and JetBrains Mono for system metadata.
-- **No Cluttered Cards**: Statistics are presented as inline typography (`18 completed Â· 7 skipped Â· 2 failed`) without large colored boxes.
-- **Zero-Flash Theme Toggle**: Smoothly transitions between Light and Dark mode, persisting preference in `localStorage`.
+The project was developed through an iterative AI-assisted workflow involving:
+
+- Architecture planning
+- Code generation
+- Refactoring
+- Debugging
+- LLM integration
+- Fallback-engine development
+- Evaluation design
+- UI development
+- Visual refinement
+- Testing
+- QA
+- Bug diagnosis and resolution
+
+AI tools were used as development assistants rather than as a single-shot code-generation pipeline.
+
+The development process evolved through:
+
+```text
+Architecture Planning
+        |
+        v
+Interview State
+        |
+        v
+Adaptive Engine
+        |
+        v
+Deterministic Fallback
+        |
+        v
+LLM Integration
+        |
+        v
+Technical Console
+        |
+        v
+Assessment System
+        |
+        v
+Visual Redesign
+        |
+        v
+Theme Support
+        |
+        v
+QA Audit
+        |
+        v
+Evaluation Bug Fix
+        |
+        v
+Final Verification
+```
+
+A detailed record of the major AI-assisted prompts and development phases is available in:
+
+```text
+PROMPTS.md
+```
 
 ---
 
-## 22. AI-Assisted Development
+# 📜 Development History
 
-This project was designed and built iteratively using **Antigravity (Google DeepMind)** AI pairing. AI assistance was utilized across:
-- **System Architecture**: Designing the 3-layer context model and state machine threshold logic.
-- **Engine Implementation**: Developing duplicate question detection algorithms and evaluation metrics.
-- **Fallback Engineering**: Building a robust, deterministic evaluation bank for zero-config execution.
-- **UI Design System**: Refining editorial layout compositions and custom theme tokens.
+Major implementation milestones included:
 
-*Detailed logs of AI system prompts, architectural decisions, and iteration histories are documented in [`PROMPTS.md`](./PROMPTS.md).*
+1. Initial interview-agent foundation
+2. Candidate and curriculum data layer
+3. Interview session engine
+4. Adaptive interview engine
+5. Deterministic fallback engine
+6. LLM reasoning integration
+7. Technical interview console
+8. Interview assessment and feedback
+9. Evidence-based evaluation improvements
+10. Visual redesign
+11. Theme toggle
+12. Fallback evaluation improvements
+13. Comprehensive QA
+14. Final Problem Statement verification
+
+The repository history preserves these stages through Git commits.
 
 ---
 
-## 23. Final Status
+# 📌 Requirement Checklist
 
-Final validation completed successfully and the project is ready for submission to the **ABTalks Vibe Code Hackathon**.
+## Interview
 
+- ✅ Conversational technical interview
+- ✅ Personalized candidate experience
+- ✅ Multi-turn interaction
+- ✅ Context preservation
+- ✅ Intelligent follow-up questions
+- ✅ Adaptive difficulty
+
+## Curriculum & Candidate Data
+
+- ✅ Candidate history integration
+- ✅ Completed mission awareness
+- ✅ Failed mission awareness
+- ✅ Skipped mission awareness
+- ✅ Curriculum grounding
+- ✅ Curriculum day tracking
+
+## Evaluation
+
+- ✅ Evidence-based answer evaluation
+- ✅ Weak-answer handling
+- ✅ "I don't know" handling
+- ✅ Concise technical-answer handling
+- ✅ Strength detection
+- ✅ Gap detection
+- ✅ Actionable next steps
+
+## Interview Constraints
+
+- ✅ Minimum 8 questions
+- ✅ Minimum 4 curriculum days
+- ✅ Duplicate-question prevention
+- ✅ Topic rotation
+- ✅ Session-based state
+
+## Reliability
+
+- ✅ Deterministic fallback without API key
+- ✅ API request validation
+- ✅ Production build validation
+- ✅ TypeScript validation
+- ✅ ESLint validation
+- ✅ Final end-to-end QA
+
+## Interface
+
+- ✅ Candidate selection
+- ✅ Interview console
+- ✅ Progress indicators
+- ✅ Final assessment
+- ✅ Theme toggle
+- ✅ Responsive presentation
+
+---
+
+# 🔗 Links
+
+### Live Demo
+
+https://ai-interview-agent-opal.vercel.app/
+
+### GitHub Repository
+
+https://github.com/gauranshi1707/ai-interview-agent
+
+### AI Usage Log
+
+`PROMPTS.md`
+
+---
+
+# 🏁 Final Status
+
+The application was subjected to a final pre-submission QA audit covering:
+
+- Static validation
+- Production build
+- API contract
+- Full interview flow
+- Adaptivity
+- Context preservation
+- Follow-up behavior
+- Candidate personalization
+- Weak-answer handling
+- IDK handling
+- Concise technical-answer evaluation
+- Duplicate prevention
+- Fallback mode
+- Structured feedback
+- Frontend behavior
+- Theme behavior
+- Repository state
+
+### Final Status
+
+```text
+Critical blockers: 0
+High-priority issues: 0
+Submission status: READY
+```
+
+---
+
+## 📄 License
+
+Built for the **ABTalks Vibe Code Hackathon — Problem Statement 2: The AI Interview Agent**.
