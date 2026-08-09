@@ -138,6 +138,92 @@ The theme toggle was implemented as a UI enhancement without changing interview 
 
 ---
 
+### Phase 8: Comprehensive QA & Problem Statement Verification
+
+- **Prompt:** *"Perform one final, thorough QA pass on the current codebase against the ABTalks Problem Statement and technical specification. Test the API contract, complete multi-turn interviews, adaptivity, context preservation, follow-up behavior, IDK handling, duplicate prevention, candidate personalization, minimum question/curriculum coverage, fallback mode, frontend integration, and repository readiness. Do not modify the code; report blockers and non-blocking issues."*
+
+- **Outcome:** Performed a comprehensive QA audit covering the application from both the API and user-flow perspectives.
+
+The audit verified:
+
+- TypeScript compilation
+- ESLint
+- Next.js production build
+- `POST /api/interview` contract
+- Multi-turn session handling
+- Minimum 8-question requirement
+- Minimum 4 curriculum-day requirement
+- Candidate personalization
+- Adaptive difficulty
+- Follow-up behavior
+- Context preservation
+- Duplicate-question prevention
+- `"I don't know"` handling
+- Fallback mode without an API key
+- Structured final feedback
+- Frontend integration
+- Theme behavior
+- Repository cleanliness
+
+The initial audit identified an evaluation edge case where concise but technically correct answers could fall into a scoring dead zone, resulting in neither a strength nor a gap being recorded.
+
+---
+
+### Phase 9: Evidence-Based Fallback Evaluation Fix
+
+- **Prompt:** *"Fix the fallback evaluation dead zone where concise but technically correct answers can receive enough correctness to avoid being classified as a gap, but not enough average score to be classified as a strength. Preserve strict IDK handling and do not introduce false strengths. Expand technical-term recognition where appropriate and ensure the final summary remains consistent with the collected evidence."*
+
+- **Outcome:** Updated `src/lib/interview/fallback.ts` to improve evidence-based fallback evaluation.
+
+The changes included:
+
+- Expanded recognition of relevant technical terminology
+- Improved identification of technically strong concise answers
+- Removed the scoring dead zone between strengths and gaps
+- Preserved strict `"I don't know"` handling
+- Improved final summary logic when evidence is mixed or inconclusive
+
+The fix was validated against multiple synthetic candidate behaviors, including:
+
+- Strong technical answers
+- Mixed strong and weak answers
+- Concise technically correct answers
+- All-IDK answers
+
+The previously failing concise-answer scenario was re-tested successfully.
+
+---
+
+### Phase 10: Final Pre-Submission Verification
+
+- **Prompt:** *"Perform one final read-only pre-submission QA audit. Do not modify, commit, or push anything. Verify the build, API contract, full interview flow, adaptivity, context, follow-ups, IDK handling, concise technical answers, duplicate prevention, candidate personalization, completion requirements, fallback mode, frontend behavior, security, and repository state."*
+
+- **Outcome:** Final audit confirmed:
+
+  - TypeScript: 0 errors
+  - ESLint: 0 errors, 0 warnings
+  - Production build: passed
+  - API contract: passed
+  - Multi-turn interview: passed
+  - 8-question minimum: passed
+  - 4-curriculum-day minimum: passed
+  - Adaptive difficulty: passed
+  - Context preservation: passed
+  - Follow-up behavior: passed
+  - Candidate personalization: passed
+  - IDK handling: passed
+  - Concise technical answer evaluation: passed
+  - Duplicate prevention: passed
+  - Deterministic fallback mode: passed
+  - Frontend integration: passed
+  - Theme toggle: passed
+  - Security checks: passed
+  - Repository state: clean
+
+No critical or high-priority issues remained.
+
+The only non-blocking observation was that malformed JSON sent directly to the API results in an HTTP 500 response rather than a 400 response. This does not affect the stated minimum requirements or normal application flow.
+
 ## 🧪 Validation & Version Control
 
 After the major implementation and visual refinement stages, the project was repeatedly validated using:
@@ -156,5 +242,8 @@ The visual redesign was committed separately from the underlying interview-engin
 - `9bffd1f` — Fix live header dynamic `currentCompetency` label and update assessment summary wording
 - `59cae0e` — Refine interview platform visual design
 - `0ca6349` — Add theme toggle and refine hero layout
+- `77c12a9` — Revise AI usage log and enhance visual structure
+- `e24b52c` — Fix fallback evaluation for concise technical answers
 
-The final validated branch was pushed to GitHub after confirming a clean working tree and successful production build/lint checks.
+The final validated branch was rebased onto the latest `main`, verified, and pushed to GitHub with a clean working tree.
+
