@@ -154,32 +154,34 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
   }
 
   return (
-    <div className="min-h-screen bg-[#020817] flex flex-col">
-      {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-[#F7F4EC] flex flex-col">
+      {/* ── Header ── */}
+      <header className="border-b border-[#DED8CB] bg-[#F7F4EC] sticky top-0 z-10">
+        {/* Top row: candidate identity + question counter */}
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+            {/* Avatar */}
+            <div className="w-9 h-9 rounded-lg bg-[#245C49] flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-sm font-semibold font-serif">
+                {candidate.name.charAt(0)}
+              </span>
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-white font-semibold">{candidate.name}</span>
-                <span className="text-slate-500 text-sm">·</span>
-                <span className="text-slate-400 text-sm">{candidate.role}</span>
-                <span className="text-slate-500 text-sm">·</span>
-                <span className="text-slate-400 text-sm">{candidate.yearsOfExperience} YOE</span>
+                <span className="text-[#171A18] font-semibold">{candidate.name}</span>
+                <span className="text-[#DED8CB] text-sm">·</span>
+                <span className="text-[#6E6A61] text-sm">{candidate.role}</span>
+                <span className="text-[#DED8CB] text-sm">·</span>
+                <span className="text-[#6E6A61] text-sm">{candidate.yearsOfExperience} YOE</span>
               </div>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 text-xs text-blue-400 bg-blue-950/50 border border-blue-800/40 rounded-full px-2 py-0.5">
-                  <span className="w-1 h-1 rounded-full bg-blue-400 inline-block"></span>
+                <span className="inline-flex items-center gap-1 text-xs text-[#245C49] border border-[#C5DACE] bg-[#EBF2EE] rounded-full px-2.5 py-0.5">
+                  <span className="w-1 h-1 rounded-full bg-[#245C49] inline-block"></span>
                   Tailored to Cohort Journey
                 </span>
-                <span className="text-xs text-slate-500">{track}</span>
+                <span className="text-xs text-[#9A9590]">{track}</span>
                 {difficulty && (
-                  <span className="text-xs text-slate-400 capitalize bg-slate-800/60 px-2 py-0.5 rounded border border-slate-700/50">
+                  <span className="text-xs text-[#6E6A61] capitalize border border-[#DED8CB] bg-[#F0EDE4] px-2 py-0.5 rounded">
                     Difficulty: {difficulty}
                   </span>
                 )}
@@ -187,77 +189,88 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
             </div>
           </div>
 
-          {/* Progress */}
+          {/* Question counter — prominent per reference */}
           <div className="flex-shrink-0 text-right">
-            <div className="text-white font-semibold text-sm">Question {questionCount}</div>
-            <div className="text-xs text-slate-500">
-              {curriculumDays.length} curriculum day{curriculumDays.length !== 1 ? 's' : ''} covered
+            <div className="font-serif text-2xl font-medium text-[#171A18] leading-none">
+              Q{questionCount}
+            </div>
+            <div className="text-xs text-[#9A9590] mt-0.5">
+              {curriculumDays.length} topic{curriculumDays.length !== 1 ? 's' : ''} covered
             </div>
           </div>
         </div>
 
-        {/* Dynamic Assessing Header */}
-        <div className="max-w-4xl mx-auto px-4 pb-2.5">
-          <div className="flex items-center justify-between text-xs gap-2 flex-wrap">
-            <div className="flex items-center gap-2 text-slate-400">
-              <span className="text-blue-400 font-semibold uppercase tracking-wider text-[11px]">Assessing:</span>
-              <span className="text-white font-medium bg-blue-950/60 border border-blue-800/50 px-2.5 py-0.5 rounded-md">
-                {activeAssessingTopic}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-500 text-xs">
-              <span className="text-emerald-400">{candidate.completedMissions.length} completed</span>
-              <span>·</span>
-              <span className="text-amber-400">{candidate.skippedMissions.length} skipped</span>
-              <span>·</span>
-              <span className="text-rose-400">{candidate.failedMissions.length} failed</span>
-            </div>
+        {/* Sub-row: inline stats + assessing topic */}
+        <div className="max-w-4xl mx-auto px-4 pb-2.5 border-t border-[#EAE6DC] pt-2">
+          <div className="flex items-center gap-1.5 flex-wrap text-xs">
+            <span className="text-[#245C49] font-medium">{candidate.completedMissions.length} completed</span>
+            <span className="text-[#DED8CB]">·</span>
+            <span className="text-[#B88632]">{candidate.skippedMissions.length} skipped</span>
+            <span className="text-[#DED8CB]">·</span>
+            <span className="text-[#8C4A3C]">{candidate.failedMissions.length} failed</span>
+            {activeAssessingTopic && (
+              <>
+                <span className="text-[#DED8CB]">·</span>
+                <span className="text-[#6E6A61]">
+                  Assessing: <span className="text-[#171A18] font-medium">{activeAssessingTopic}</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Messages */}
+      {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`flex gap-3 animate-fade-in ${msg.role === 'candidate' ? 'flex-row-reverse' : ''}`}
-            >
-              {/* Avatar */}
-              <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold
-                ${msg.role === 'interviewer' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-200'}`}>
-                {msg.role === 'interviewer' ? 'AI' : candidate.name.charAt(0).toUpperCase()}
-              </div>
-
-              {/* Bubble */}
-              <div className={`max-w-[80%] sm:max-w-[72%] ${msg.role === 'candidate' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <span className="text-xs text-slate-500 flex items-center gap-2">
-                  {msg.role === 'interviewer' ? 'Interviewer' : candidate.name}
-                  {msg.role === 'interviewer' && i === messages.length - 1 && activeAssessingTopic && (
-                    <span className="text-[10px] text-blue-400 bg-blue-950/40 px-1.5 py-0.2 rounded border border-blue-900/40">
-                      {activeAssessingTopic}
-                    </span>
-                  )}
-                </span>
-                <div className={`rounded-2xl px-4 py-3 leading-relaxed text-sm
-                  ${msg.role === 'interviewer'
-                    ? 'bg-slate-800 text-slate-200 rounded-tl-sm border border-slate-700/50'
-                    : 'bg-blue-600 text-white rounded-tr-sm'
+        <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+          {messages.map((msg, i) => {
+            const isInterviewer = msg.role === 'interviewer';
+            return (
+              <div
+                key={i}
+                className={`flex gap-3 animate-fade-in ${!isInterviewer ? 'flex-row-reverse' : ''}`}
+              >
+                {/* Avatar */}
+                <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center text-xs font-bold font-serif
+                  ${isInterviewer
+                    ? 'bg-[#245C49] text-white'
+                    : 'bg-[#EAE6DC] text-[#6E6A61] border border-[#DED8CB]'
                   }`}>
-                  {msg.content}
+                  {isInterviewer ? 'AI' : candidate.name.charAt(0).toUpperCase()}
+                </div>
+
+                {/* Bubble */}
+                <div className={`flex flex-col gap-1 max-w-[75%] ${!isInterviewer ? 'items-end' : 'items-start'}`}>
+                  <span className={`text-xs ${isInterviewer ? 'text-[#9A9590]' : 'text-[#9A9590]'}`}>
+                    {isInterviewer ? 'Interviewer' : candidate.name}
+                    {isInterviewer && i === messages.length - 1 && activeAssessingTopic && (
+                      <span className="ml-2 text-[#245C49]/60">· {activeAssessingTopic}</span>
+                    )}
+                  </span>
+
+                  {/* Interviewer message — bordered editorial card */}
+                  {isInterviewer ? (
+                    <div className="bg-[#F7F4EC] border border-[#DED8CB] rounded-lg px-5 py-4 leading-relaxed text-sm text-[#171A18] shadow-sm">
+                      {msg.content}
+                    </div>
+                  ) : (
+                    /* Candidate response — warm surface, right-aligned, restrained */
+                    <div className="bg-[#EAE6DC] border border-[#CEC8BA] rounded-lg px-5 py-4 leading-relaxed text-sm text-[#171A18]">
+                      {msg.content}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Typing indicator */}
           {loading && (
             <div className="flex gap-3 animate-fade-in">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">AI</div>
+              <div className="w-8 h-8 rounded-lg bg-[#245C49] flex-shrink-0 flex items-center justify-center text-xs font-bold text-white font-serif">AI</div>
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-slate-500">Interviewer</span>
-                <div className="bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 border border-slate-700/50">
+                <span className="text-xs text-[#9A9590]">Interviewer</span>
+                <div className="bg-[#F7F4EC] border border-[#DED8CB] rounded-lg px-5 py-4 flex items-center gap-1.5 shadow-sm">
                   <div className="typing-dot"></div>
                   <div className="typing-dot"></div>
                   <div className="typing-dot"></div>
@@ -267,7 +280,7 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
           )}
 
           {error && (
-            <div className="bg-rose-950/50 border border-rose-800/50 text-rose-300 text-sm rounded-xl px-4 py-3">
+            <div className="border border-[#DED8CB] bg-[#F5EDEB] text-[#8C4A3C] text-sm rounded-lg px-4 py-3">
               {error}
             </div>
           )}
@@ -276,9 +289,9 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
         </div>
       </div>
 
-      {/* Input */}
+      {/* ── Input ── */}
       {!done && (
-        <div className="border-t border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+        <div className="border-t border-[#DED8CB] bg-[#F0EDE4]">
           <div className="max-w-4xl mx-auto px-4 py-4">
             <div className="flex gap-3">
               <textarea
@@ -290,18 +303,18 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
                 placeholder="Type your response... (Enter to send, Shift+Enter for new line)"
                 rows={3}
                 id="candidate-input"
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/30 transition-colors disabled:opacity-50"
+                className="flex-1 bg-[#F7F4EC] border border-[#DED8CB] rounded-lg px-4 py-3 text-sm text-[#171A18] placeholder-[#9A9590] resize-none focus:outline-none focus:border-[#245C49]/50 focus:ring-1 focus:ring-[#245C49]/20 transition-colors disabled:opacity-50"
               />
               <button
                 onClick={sendMessage}
                 disabled={loading || done || !input.trim()}
                 id="send-button"
-                className="px-5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl font-medium text-sm transition-colors self-end h-[52px] flex-shrink-0"
+                className="px-5 border border-[#245C49] text-[#245C49] hover:bg-[#245C49] hover:text-white disabled:border-[#DED8CB] disabled:text-[#9A9590] disabled:bg-transparent rounded-lg font-medium text-sm transition-colors self-end h-[52px] flex-shrink-0"
               >
                 Send
               </button>
             </div>
-            <p className="text-xs text-slate-600 mt-2 text-center">
+            <p className="text-xs text-[#9A9590] mt-2 text-center">
               Question {questionCount} · {Math.max(0, 8 - questionCount)} more required · Press Enter to send
             </p>
           </div>
@@ -311,7 +324,7 @@ export default function InterviewConsole({ sessionId, candidate }: InterviewCons
   );
 }
 
-// Feedback Screen Component
+// ── Feedback Screen ──
 function FeedbackScreen({
   candidate,
   feedback,
@@ -324,98 +337,103 @@ function FeedbackScreen({
   competencies: string[];
 }) {
   return (
-    <div className="min-h-screen bg-[#020817] text-slate-200">
+    <div className="min-h-screen bg-[#F7F4EC] text-[#171A18]">
       <div className="max-w-3xl mx-auto px-4 py-12">
+
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/30 mb-5">
-            <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-[#EBF2EE] border border-[#C5DACE] mb-5">
+            <svg className="w-7 h-7 text-[#245C49]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Technical Interview Complete</h1>
-          <p className="text-slate-400">
+          <h1 className="font-serif text-3xl font-medium text-[#171A18] mb-2">Technical Interview Complete</h1>
+          <p className="text-[#6E6A61] text-sm">
             {candidate.name} · {candidate.role} · {questionCount} questions · {competencies.length || 4} competencies assessed
           </p>
         </div>
 
-        {/* Summary Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Overall Technical Assessment</h2>
-          <p className="text-slate-200 leading-relaxed">{feedback.summary}</p>
+        {/* Overall Assessment */}
+        <div className="bg-[#F0EDE4] border border-[#DED8CB] rounded-lg p-6 mb-5">
+          <h2 className="text-xs font-semibold text-[#9A9590] uppercase tracking-widest mb-4">Overall Assessment</h2>
+          {/* Gold left-border quote per reference */}
+          <div className="border-l-2 border-[#B88632] pl-4">
+            <p className="text-[#171A18] leading-relaxed">{feedback.summary}</p>
+          </div>
         </div>
 
         {/* Strengths */}
-        <div className="bg-emerald-950/30 border border-emerald-900/40 rounded-2xl p-6 mb-4">
-          <h2 className="text-xs font-semibold text-emerald-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        <div className="bg-[#F0EDE4] border border-[#DED8CB] rounded-lg p-6 mb-5">
+          <h2 className="text-xs font-semibold text-[#245C49] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
-            Demonstrated Technical Strengths
+            Demonstrated Strengths
           </h2>
-          {feedback.strengths.length > 0 ? (
-            <ul className="space-y-2">
-              {feedback.strengths.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-emerald-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0"></span>
-                  {s}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-slate-400 italic">
-              No technical strengths demonstrated during this session.
-            </p>
-          )}
+          <div className="border-t border-[#DED8CB] pt-4">
+            {feedback.strengths.length > 0 ? (
+              <ul className="space-y-2.5">
+                {feedback.strengths.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-[#171A18]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#245C49] mt-1.5 flex-shrink-0"></span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#9A9590] italic">No technical strengths demonstrated during this session.</p>
+            )}
+          </div>
         </div>
 
         {/* Gaps */}
-        <div className="bg-amber-950/20 border border-amber-900/30 rounded-2xl p-6 mb-4">
-          <h2 className="text-xs font-semibold text-amber-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-[#F0EDE4] border border-[#DED8CB] rounded-lg p-6 mb-5">
+          <h2 className="text-xs font-semibold text-[#B88632] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            Un-Demonstrated / Weak Competencies
+            Gaps
           </h2>
-          {feedback.gaps.length > 0 ? (
-            <ul className="space-y-2">
-              {feedback.gaps.map((g, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-amber-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></span>
-                  {g}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-slate-400 italic">
-              No technical gaps identified.
-            </p>
-          )}
+          <div className="border-t border-[#DED8CB] pt-4">
+            {feedback.gaps.length > 0 ? (
+              <ul className="space-y-2.5">
+                {feedback.gaps.map((g, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-sm text-[#171A18]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#B88632] mt-1.5 flex-shrink-0"></span>
+                    {g}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[#9A9590] italic">No technical gaps identified.</p>
+            )}
+          </div>
         </div>
 
-        {/* Next Steps */}
-        <div className="bg-blue-950/20 border border-blue-900/30 rounded-2xl p-6 mb-8">
-          <h2 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* Recommended Next Steps */}
+        <div className="bg-[#F0EDE4] border border-[#DED8CB] rounded-lg p-6 mb-8">
+          <h2 className="text-xs font-semibold text-[#245C49] uppercase tracking-widest mb-4 flex items-center gap-2">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-            Recommended Learning Path
+            Recommended Next Steps
           </h2>
-          <ul className="space-y-2">
+          <div className="border-t border-[#DED8CB] pt-4 space-y-0">
             {feedback.next.map((n, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-blue-200">
-                <span className="font-mono text-blue-500 text-xs mt-0.5">{String(i + 1).padStart(2, '0')}.</span>
-                {n}
-              </li>
+              <div key={i} className={`flex items-start gap-4 py-3 text-sm ${i < feedback.next.length - 1 ? 'border-b border-[#DED8CB]/60' : ''}`}>
+                <span className="font-mono text-[#6E6A61] text-xs w-6 flex-shrink-0 pt-0.5">{String(i + 1).padStart(2, '0')}.</span>
+                {/* Vertical pipe separator per reference */}
+                <span className="border-l border-[#DED8CB] pl-4 text-[#171A18] leading-relaxed">{n}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
         {/* Back button */}
         <div className="text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-medium text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 border border-[#DED8CB] bg-[#F0EDE4] hover:border-[#245C49]/40 hover:bg-[#EBF2EE]/40 text-[#6E6A61] rounded-lg font-medium text-sm transition-colors"
           >
             ← Interview Another Candidate
           </Link>

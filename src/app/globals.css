@@ -1,78 +1,113 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-
+/* ── Design tokens ── */
 :root {
-  --background: #020817;
-  --foreground: #e2e8f0;
-  --card: #0f172a;
-  --card-border: #1e293b;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --muted: #64748b;
-  --accent: #0ea5e9;
+  --canvas:    #F7F4EC;
+  --surface:   #F0EDE4;
+  --surface-2: #EAE6DC;
+  --border:    #DED8CB;
+  --border-2:  #CEC8BA;
+  --text-1:    #171A18;
+  --text-2:    #6E6A61;
+  --text-3:    #9A9590;
+  --green:     #245C49;
+  --green-h:   #1A4335;
+  --green-s:   #EBF2EE;
+  --green-b:   #C5DACE;
+  --gold:      #B88632;
+  --gold-s:    #F5F0E4;
+  --gold-b:    #DCC896;
+  --red-m:     #8C4A3C;
+  --red-s:     #F5EDEB;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+  --color-background: var(--canvas);
+  --color-foreground: var(--text-1);
+
+  /* Remap Tailwind slate tokens → warm neutrals */
+  --color-slate-50:  #F7F4EC;
+  --color-slate-100: #F0EDE4;
+  --color-slate-200: #EAE6DC;
+  --color-slate-300: #DED8CB;
+  --color-slate-400: #9A9590;
+  --color-slate-500: #6E6A61;
+  --color-slate-600: #4A4740;
+  --color-slate-700: #393630;
+  --color-slate-800: #2A2820;
+  --color-slate-900: #1D1B14;
+  --color-slate-950: #171A18;
+
+  /* Remap blue tokens → forest green */
+  --color-blue-50:  #EBF2EE;
+  --color-blue-100: #C5DACE;
+  --color-blue-200: #9DC4B0;
+  --color-blue-300: #6FA88E;
+  --color-blue-400: #3D8A6A;
+  --color-blue-500: #245C49;
+  --color-blue-600: #245C49;
+  --color-blue-700: #1A4335;
+  --color-blue-800: #122E25;
+  --color-blue-900: #0A1D17;
+  --color-blue-950: #061210;
+
+  /* Remap emerald tokens → forest green */
+  --color-emerald-400: #245C49;
+  --color-emerald-500: #245C49;
+  --color-emerald-900: #EBF2EE;
+  --color-emerald-950: #EBF2EE;
+
+  /* Remap amber/yellow → gold */
+  --color-amber-400: #B88632;
+  --color-amber-500: #B88632;
+  --color-amber-900: #F5F0E4;
+  --color-amber-950: #F5F0E4;
+
+  /* Remap rose/red → muted terracotta */
+  --color-rose-400:  #8C4A3C;
+  --color-rose-500:  #8C4A3C;
+  --color-rose-700:  #8C4A3C;
+  --color-rose-900:  #F5EDEB;
+  --color-rose-950:  #F5EDEB;
 }
 
-html {
-  color-scheme: dark;
-}
+html { color-scheme: light; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--text-1);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--canvas); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Serif utility */
+.font-serif { font-family: 'Playfair Display', Georgia, serif; }
 
 /* Animations */
 @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes pulse-subtle {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50%       { opacity: 0.4; }
 }
 
-.animate-fade-in {
-  animation: fadeSlideIn 0.3s ease-out forwards;
-}
+.animate-fade-in { animation: fadeSlideIn 0.25s ease-out forwards; }
 
-.animate-pulse-subtle {
-  animation: pulse-subtle 1.5s ease-in-out infinite;
-}
-
-/* Typing indicator dots */
+/* Typing dots */
 .typing-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #64748b;
+  background: var(--text-3);
   animation: pulse-subtle 1.2s ease-in-out infinite;
 }
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+.typing-dot:nth-child(2) { animation-delay: 0.18s; }
+.typing-dot:nth-child(3) { animation-delay: 0.36s; }
